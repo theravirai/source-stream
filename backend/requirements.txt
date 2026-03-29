@@ -224,6 +224,8 @@ python-dotenv==1.2.2
     # via
     #   source-stream-backend (pyproject.toml)
     #   pydantic-settings
+python-multipart==0.0.32
+    # via source-stream-backend (pyproject.toml)
 pyyaml==6.0.3
     # via
     #   langchain-classic
