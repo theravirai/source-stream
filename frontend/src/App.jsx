@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Layers, FileText, Database, Cpu } from 'lucide-react'
+import DocumentLoader from './components/DocumentLoader'
 
 function App() {
   const [status, setStatus] = useState('checking')
@@ -55,6 +56,11 @@ function App() {
             </p>
           </div>
         )}
+      </section>
+
+      <section className="glass-card">
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>Ingest Knowledge Source</h2>
+        <DocumentLoader />
       </section>
 
       <section>
