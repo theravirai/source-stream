@@ -5,6 +5,8 @@ import DocumentLoader from './components/DocumentLoader'
 function App() {
   const [status, setStatus] = useState('checking')
   const [serverInfo, setServerInfo] = useState(null)
+  const [loadedDocuments, setLoadedDocuments] = useState(null)
+  const [splitChunks, setSplitChunks] = useState(null)
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -59,8 +61,11 @@ function App() {
       </section>
 
       <section className="glass-card">
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>Ingest Knowledge Source</h2>
-        <DocumentLoader />
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>1. Ingest Knowledge Source</h2>
+        <DocumentLoader onDocumentsLoaded={(docs) => {
+          setLoadedDocuments(docs)
+          setSplitChunks(null)
+        }} />
       </section>
 
       <section>

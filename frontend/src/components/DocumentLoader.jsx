@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { FileText, Link, UploadCloud, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 
-function DocumentLoader() {
+function DocumentLoader({ onDocumentsLoaded }) {
   const [activeTab, setActiveTab] = useState('text') // 'text' | 'pdf' | 'website'
   const [file, setFile] = useState(null)
   const [url, setUrl] = useState('')
@@ -57,11 +57,17 @@ function DocumentLoader() {
     setError(null)
     setResults(null)
     setExpandedDocIndex(null)
+    if (onDocumentsLoaded) {
+      onDocumentsLoaded(null)
+    }
   }
 
   const handleLoad = async () => {
     setError(null)
     setResults(null)
+    if (onDocumentsLoaded) {
+      onDocumentsLoaded(null)
+    }
     setLoading(true)
 
     try {
@@ -95,6 +101,9 @@ function DocumentLoader() {
 
       const docs = await response.json()
       setResults(docs)
+      if (onDocumentsLoaded) {
+        onDocumentsLoaded(docs)
+      }
     } catch (err) {
       setError(err.message || 'An unexpected error occurred.')
     } finally {
@@ -171,7 +180,13 @@ function DocumentLoader() {
                 </div>
                 <button 
                   className="clear-file-btn"
-                  onClick={() => setFile(null)}
+                  onClick={() => {
+                    setFile(null)
+                    setResults(null)
+                    if (onDocumentsLoaded) {
+                      onDocumentsLoaded(null)
+                    }
+                  }}
                   title="Remove file"
                 >
                   <Trash2 size={18} />
