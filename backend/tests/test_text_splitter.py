@@ -45,3 +45,36 @@ def test_text_splitter_service():
         assert chunk.metadata["source"] == "test.txt"
         assert chunk.metadata["chunk_index"] == i
         assert len(chunk.page_content) <= 500
+
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_split_endpoint_success():
+    payload = {
+        "documents": [
+            {"page_content": "This is a sentence that is long enough to split. " * 10, "metadata": {"source": "doc.txt"}}
+        ],
+        "chunk_size": 150,
+        "chunk_overlap": 20
+    }
+    response = client.post("/api/v1/text-splitter/split", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) >= 2
+    assert data[0]["metadata"]["source"] == "doc.txt"
+    assert "chunk_index" in data[0]["metadata"]
+
+def test_split_endpoint_validation_error():
+    # overlap >= size
+    payload = {
+        "documents": [
+            {"page_content": "some text", "metadata": {"source": "doc.txt"}}
+        ],
+        "chunk_size": 100,
+        "chunk_overlap": 100
+    }
+    response = client.post("/api/v1/text-splitter/split", json=payload)
+    assert response.status_code == 422
+
