@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Layers, FileText, Database, Cpu } from 'lucide-react'
 import DocumentLoader from './components/DocumentLoader'
+import TextSplitter from './components/TextSplitter'
 
 function App() {
   const [status, setStatus] = useState('checking')
@@ -66,6 +67,15 @@ function App() {
           setLoadedDocuments(docs)
           setSplitChunks(null)
         }} />
+      </section>
+
+      <section className="glass-card">
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>2. Text Chunking</h2>
+        <TextSplitter 
+          documents={loadedDocuments}
+          chunks={splitChunks}
+          onChunksGenerated={setSplitChunks}
+        />
       </section>
 
       <section>
