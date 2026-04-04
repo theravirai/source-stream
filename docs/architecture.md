@@ -12,8 +12,8 @@ graph TD
 
     subgraph Server [FastAPI Backend]
         API[FastAPI Router]
-        ING[Ingestion Service]
-        SCR[Scraper Service]
+        DL[Document Loader Service]
+        TS[Text Splitter Service]
         EMB[Gemini Embeddings Service]
         VEC[Qdrant Vectorstore Service]
         LLM[Groq LLM Service]
@@ -27,10 +27,11 @@ graph TD
     end
 
     UI <-->|HTTP API| API
-    API --> ING
-    API --> SCR
-    ING --> EMB
-    SCR --> EMB
+    API --> DL
+    API --> TS
+    API --> EMB
+    DL --> UI
+    TS --> UI
     EMB --> VEC
     VEC --> Remote
     VEC <--> RAG
@@ -38,10 +39,31 @@ graph TD
     LLM --> Remote
 ```
 
+## Stepwise Ingestion & Data Flow
+
+`source-stream` utilizes a decoupled, step-by-step ingestion pipeline designed to allow inspectability at each stage:
+
+1. **Step 1: Document Loading**
+   - The user selects a source (Text file, PDF, or website URL) on the Vite React client.
+   - The client invokes the corresponding endpoint (`/api/v1/document-loader/...`).
+   - The router delegates to the **Document Loader Service** (`app/services/document_loader`), which loads the contents using the appropriate LangChain loader (`TextLoader`, `PyPDFLoader`, or `RecursiveUrlLoader`) and returns a list of loaded `Document` objects with metadata.
+   - The client stores these documents in its state.
+
+2. **Step 2: Text Chunking (Splitting)**
+   - The client takes the loaded documents from state and presents customization controls (chunk size and overlap).
+   - When the user triggers splitting, the client calls `/api/v1/text-splitter/split` with the documents and configurations.
+   - The router delegates to the **Text Splitter Service** (`app/services/text_splitter.py`), which instantiates `RecursiveCharacterTextSplitter` to segment the documents and appends sequential `chunk_index` numbers to each chunk's metadata.
+   - The split chunks are returned to the client and stored in the client state.
+
+3. **Step 3: Embeddings & Vector Storage (Future)**
+   - Chunks will be embedded and stored in Qdrant.
+
+---
+
 ## Modular Responsibilities
 
-- **FastAPI router (`backend/app/api/routes`)**: Entrypoints and CORS configurations. Only validates requests/responses, delegating actual process flows to services.
-- **Ingestion service (`backend/app/services/ingestion`)**: Handles chunking of local files (like PDFs) and coordinates pipeline embedding.
-- **Scraper service (`backend/app/services/scraper`)**: Connects to external documentation hosts, parsing pages to clean text representation.
-- **Embeddings / Vector database (`backend/app/services/vectorstore`)**: Packages embeddings generation (Gemini) and indexes document chunks into Qdrant Cloud.
-- **RAG core (`backend/app/services/rag_chain`)**: Coordinates retrieving matching citations, formulating final prompts, and invoking Groq to deliver answers with precise source metadata.
+- **FastAPI router (`backend/app/api/routes/`)**: Receives, validates, and handles HTTP requests. Delegates operational work directly to services and returns standard Pydantic models.
+- **Document Loader Service (`backend/app/services/document_loader/`)**: Encapsulates loaders for text, PDFs, and websites, converting them to standard LangChain document structures.
+- **Text Splitter Service (`backend/app/services/text_splitter.py`)**: Manages character-based recursive chunking logic and handles document chunk indexes.
+- **Embeddings / Vector database (Future)**: Will generate Gemini embeddings and index chunks into Qdrant Cloud.
+- **RAG Core (Future)**: Will retrieve relevant chunks and formulate LLM prompts for Groq API.
