@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     QDRANT_URL: str | None = None
     QDRANT_API_KEY: str | None = None
+    QDRANT_COLLECTION: str = "source_stream"
     
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
