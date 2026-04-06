@@ -154,15 +154,20 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
                       <div className="doc-meta-title">
                         <span className="doc-index-badge">Chunk #{idx + 1}</span>
                         <p className="doc-source-name">
-                          {chunk.metadata?.source?.split('/').pop() || chunk.metadata?.source || 'chunk'}
+                          {(() => {
+                            const source = chunk.metadata?.source;
+                            if (!source || typeof source !== 'string') return 'chunk';
+                            const cleanParts = source.split('/').filter(Boolean);
+                            return cleanParts.pop() || source;
+                          })()}
                         </p>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span className="page-badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--color-success)' }}>
                           {chunk.page_content.length} chars
                         </span>
-                        {chunk.metadata?.page && (
-                          <span className="page-badge">Page {chunk.metadata.page}</span>
+                        {chunk.metadata?.page !== undefined && chunk.metadata?.page !== null && (
+                          <span className="page-badge">Page {Number(chunk.metadata.page) + 1}</span>
                         )}
                         {expandedChunkIndex === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </div>

@@ -287,12 +287,17 @@ function DocumentLoader({ onDocumentsLoaded }) {
                     <div className="doc-meta-title">
                       <span className="doc-index-badge">#{idx + 1}</span>
                       <p className="doc-source-name">
-                        {doc.metadata?.source?.split('/').pop() || doc.metadata?.source || 'document'}
+                        {(() => {
+                          const source = doc.metadata?.source;
+                          if (!source || typeof source !== 'string') return 'document';
+                          const cleanParts = source.split('/').filter(Boolean);
+                          return cleanParts.pop() || source;
+                        })()}
                       </p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      {doc.metadata?.page && (
-                        <span className="page-badge">Page {doc.metadata.page}</span>
+                      {doc.metadata?.page !== undefined && doc.metadata?.page !== null && (
+                        <span className="page-badge">Page {Number(doc.metadata.page) + 1}</span>
                       )}
                       {expandedDocIndex === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </div>

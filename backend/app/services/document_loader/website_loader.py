@@ -15,10 +15,14 @@ class WebsiteLoaderService:
         if not (url.startswith("http://") or url.startswith("https://")):
             raise ValueError("URL must start with http:// or https://")
 
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
         loader = RecursiveUrlLoader(
             url=url,
             max_depth=max_depth,
             extractor=extractor,
-            prevent_outside=True
+            prevent_outside=True,
+            headers=headers
         )
         return loader.load()
