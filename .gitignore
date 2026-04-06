@@ -7,6 +7,10 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
 
 # Node
 node_modules/
@@ -16,6 +20,7 @@ dist/
 # Logs / local data
 *.log
 backend/app/data/
+backend/tmp/
 
 # OS
 .DS_Store
