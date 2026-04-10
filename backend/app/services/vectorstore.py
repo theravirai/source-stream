@@ -26,22 +26,50 @@ class VectorStoreService:
         
         collection_name = settings.QDRANT_COLLECTION or "source_stream"
         
-        # Ensure collection exists
+        embeddings = get_embeddings_service()
+
+        # Determine embedding dimension size dynamically
         try:
-            client.get_collection(collection_name=collection_name)
+            sample_vector = embeddings.embed_query("test")
+            vector_size = len(sample_vector)
+            logger.info(f"Dynamically determined embedding vector size: {vector_size}")
+        except Exception as e:
+            logger.warning(f"Failed to dynamically determine embedding size: {e}. Falling back to 3072.")
+            vector_size = 3072
+
+        # Ensure collection exists and matches the required vector dimension size
+        recreate = False
+        try:
+            coll_info = client.get_collection(collection_name=collection_name)
+            from qdrant_client.http.models import VectorParams
+            if isinstance(coll_info.config.params.vectors, VectorParams):
+                existing_size = coll_info.config.params.vectors.size
+                if existing_size != vector_size:
+                    logger.warning(f"Collection '{collection_name}' size mismatch: existing={existing_size}, required={vector_size}. Recreating collection.")
+                    recreate = True
+            else:
+                logger.warning(f"Collection '{collection_name}' uses named vectors. Recreating to standard schema.")
+                recreate = True
         except Exception:
-            logger.info(f"Collection '{collection_name}' not found. Creating collection.")
-            # Create collection with Cosine similarity and 768 vector dimension (for models/embedding-001)
+            # Collection does not exist
+            recreate = True
+
+        if recreate:
+            try:
+                logger.info(f"Deleting and recreating collection '{collection_name}' with vector size {vector_size}.")
+                client.delete_collection(collection_name=collection_name)
+            except Exception as e:
+                logger.warning(f"Could not delete collection (might not exist): {e}")
+            
             client.create_collection(
                 collection_name=collection_name,
                 vectors_config=qmodels.VectorParams(
-                    size=768,
+                    size=vector_size,
                     distance=qmodels.Distance.COSINE
                 )
             )
-            logger.info(f"Successfully created collection '{collection_name}'.")
+            logger.info(f"Successfully created collection '{collection_name}' with size {vector_size}.")
         
-        embeddings = get_embeddings_service()
         return QdrantVectorStore(
             client=client,
             collection_name=collection_name,
