@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Layers, FileText, Database, Cpu } from 'lucide-react'
 import DocumentLoader from './components/DocumentLoader'
 import TextSplitter from './components/TextSplitter'
+import VectorStore from './components/VectorStore'
 
 function App() {
   const [status, setStatus] = useState('checking')
@@ -76,6 +77,11 @@ function App() {
           chunks={splitChunks}
           onChunksGenerated={setSplitChunks}
         />
+      </section>
+
+      <section className="glass-card">
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>3. Vector Database Indexing</h2>
+        <VectorStore chunks={splitChunks} />
       </section>
 
       <section>
