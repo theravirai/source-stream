@@ -11,14 +11,14 @@ The ingestion pipeline is designed with a decoupled, modular architecture adheri
 The ingestion pipeline is built in step-by-step modular stages:
 1. **Document Loading**: Extracts raw text from plain text files (`.txt`), local PDF documents (`.pdf`), and documentation websites (recursive crawl restricting to same domain).
 2. **Text Chunking**: Segments documents into smaller, overlapping chunks using LangChain's `RecursiveCharacterTextSplitter` to fit LLM context limits and retain semantic meaning.
-3. **Embeddings & Indexing**: *[Planned]* Will embed text chunks using Gemini Embeddings and index them in Qdrant Cloud.
-4. **RAG Core & Chat**: *[Planned]* Will retrieve relevant chunks and generate answers using Groq API with sources.
+3. **Embeddings & Indexing**: Generates Google Gemini embeddings (`models/gemini-embedding-001`) and indexes chunks in Qdrant Cloud, supporting similarity search.
+4. **RAG Core & Chat**: *[Planned]* Will retrieve relevant chunks and generate answers using Groq API with sources and citations.
 
 ---
 
 ## 💻 Tech Stack
 
-- **Backend**: FastAPI, LangChain (including `langchain-text-splitters`), Groq API, Gemini Embeddings, Qdrant Vector DB, BeautifulSoup4, `lxml`, `pypdf`, `uv`
+- **Backend**: FastAPI, LangChain (including `langchain-text-splitters`, `langchain-google-genai`, and `langchain-qdrant`), Groq API, Gemini Embeddings, Qdrant Vector DB, BeautifulSoup4, `lxml`, `pypdf`, `uv`
 - **Frontend**: Vite, React (JS), Lucide Icons, Vanilla CSS
 - **Package Managers**: `uv` (Python), `npm` (Node)
 
@@ -64,6 +64,8 @@ The ingestion pipeline is built in step-by-step modular stages:
 
 ## 🔌 API Endpoints
 
+For a detailed spec of endpoints, parameters, and models, refer to [api.md](file:///Volumes/BrainStorm/Github/GenAI/source-stream/docs/api.md).
+
 ### Document Loader
 - `POST /api/v1/document-loader/text` - Load a `.txt` file and get raw text.
 - `POST /api/v1/document-loader/pdf` - Load a `.pdf` file page-by-page.
@@ -71,6 +73,10 @@ The ingestion pipeline is built in step-by-step modular stages:
 
 ### Text Splitter
 - `POST /api/v1/text-splitter/split` - Split loaded documents into chunks based on `chunk_size` and `chunk_overlap`.
+
+### Vector Store
+- `POST /api/v1/vector-store/index` - Generate embeddings and index document chunks into Qdrant.
+- `POST /api/v1/vector-store/search` - Perform a similarity search query and return matching chunks with score.
 
 ---
 

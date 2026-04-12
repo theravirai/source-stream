@@ -55,8 +55,16 @@ graph TD
    - The router delegates to the **Text Splitter Service** (`app/services/text_splitter.py`), which instantiates `RecursiveCharacterTextSplitter` to segment the documents and appends sequential `chunk_index` numbers to each chunk's metadata.
    - The split chunks are returned to the client and stored in the client state.
 
-3. **Step 3: Embeddings & Vector Storage (Future)**
-   - Chunks will be embedded and stored in Qdrant.
+3. **Step 3: Embeddings & Vector Storage**
+   - The client takes the split chunks from state and presents an indexing control interface.
+   - When the user triggers indexing, the client calls `/api/v1/vector-store/index` with the chunks.
+   - The router delegates to the **Vector Store Service** (`app/services/vectorstore.py`), which uses the **Embeddings Service** (`app/services/embeddings.py`) to generate Google Gemini embeddings (`models/gemini-embedding-001`).
+   - The vectors are indexed into Qdrant Cloud.
+   - The client can also run semantic test queries against the `/api/v1/vector-store/search` endpoint to retrieve matching chunks with similarity scores.
+
+4. **Step 4: RAG Query & LLM Synthesis (Future)**
+   - The user will interact with a chat interface to ask natural language questions.
+   - The backend will perform a similarity search to retrieve relevant source chunks, build a context-grounded prompt, and call the Groq LLM API to synthesize a response with citations.
 
 ---
 
@@ -65,5 +73,6 @@ graph TD
 - **FastAPI router (`backend/app/api/routes/`)**: Receives, validates, and handles HTTP requests. Delegates operational work directly to services and returns standard Pydantic models.
 - **Document Loader Service (`backend/app/services/document_loader/`)**: Encapsulates loaders for text, PDFs, and websites, converting them to standard LangChain document structures.
 - **Text Splitter Service (`backend/app/services/text_splitter.py`)**: Manages character-based recursive chunking logic and handles document chunk indexes.
-- **Embeddings / Vector database (Future)**: Will generate Gemini embeddings and index chunks into Qdrant Cloud.
+- **Embeddings Service (`backend/app/services/embeddings.py`)**: Instantiates Google Gemini Embeddings.
+- **Vector Store Service (`backend/app/services/vectorstore.py`)**: Connects to Qdrant Cloud, manages vector collection verification/recreation, indexes chunks, and performs similarity searches.
 - **RAG Core (Future)**: Will retrieve relevant chunks and formulate LLM prompts for Groq API.
