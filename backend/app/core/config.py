@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     
     # AI/Vector Keys (Optional on setup, required later)
     GROQ_API_KEY: str | None = None
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
     GEMINI_API_KEY: str | None = None
     QDRANT_URL: str | None = None
     QDRANT_API_KEY: str | None = None
