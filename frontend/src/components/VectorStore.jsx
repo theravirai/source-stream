@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
 
-function VectorStore({ chunks }) {
+function VectorStore({ chunks, onIndexingComplete }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [indexingComplete, setIndexingComplete] = useState(false)
@@ -38,6 +38,9 @@ function VectorStore({ chunks }) {
       setIndexedCount(results.indexed_count)
       setCollectionName(results.collection)
       setIndexingComplete(true)
+      if (onIndexingComplete) {
+        onIndexingComplete(true)
+      }
     } catch (err) {
       setError(err.message || 'Failed to index chunks in Qdrant.')
     } finally {

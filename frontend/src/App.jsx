@@ -3,12 +3,14 @@ import { Layers, FileText, Database, Cpu } from 'lucide-react'
 import DocumentLoader from './components/DocumentLoader'
 import TextSplitter from './components/TextSplitter'
 import VectorStore from './components/VectorStore'
+import ChatInterface from './components/ChatInterface'
 
 function App() {
   const [status, setStatus] = useState('checking')
   const [serverInfo, setServerInfo] = useState(null)
   const [loadedDocuments, setLoadedDocuments] = useState(null)
   const [splitChunks, setSplitChunks] = useState(null)
+  const [isIndexed, setIsIndexed] = useState(false)
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -67,6 +69,7 @@ function App() {
         <DocumentLoader onDocumentsLoaded={(docs) => {
           setLoadedDocuments(docs)
           setSplitChunks(null)
+          setIsIndexed(false)
         }} />
       </section>
 
@@ -75,13 +78,30 @@ function App() {
         <TextSplitter 
           documents={loadedDocuments}
           chunks={splitChunks}
-          onChunksGenerated={setSplitChunks}
+          onChunksGenerated={(chunks) => {
+            setSplitChunks(chunks)
+            setIsIndexed(false)
+          }}
         />
       </section>
 
       <section className="glass-card">
         <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>3. Vector Database Indexing</h2>
-        <VectorStore chunks={splitChunks} />
+        <VectorStore chunks={splitChunks} onIndexingComplete={setIsIndexed} />
+      </section>
+
+      <section className="glass-card">
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>4. RAG Query & Chat</h2>
+        {isIndexed ? (
+          <ChatInterface />
+        ) : (
+          <div className="drop-zone" style={{ borderStyle: 'solid', cursor: 'default', opacity: 0.6 }}>
+            <Cpu size={40} className="cloud-icon" />
+            <p style={{ color: 'var(--text-secondary)' }}>
+              Please index your document chunks into the vector store to enable interactive RAG Chat.
+            </p>
+          </div>
+        )}
       </section>
 
       <section>
