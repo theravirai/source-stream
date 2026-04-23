@@ -43,6 +43,7 @@ Handles HTTP request ingestion, validation, and serialization. It delegates all 
 * **`api/routes/document_loader.py`**: Directs file uploads (text/PDF) and web crawler requests to the loader service.
 * **`api/routes/text_splitter.py`**: Manages document chunking parameters (chunk size/overlap).
 * **`api/routes/vector_store.py`**: Handles indexing vectors into Qdrant and running retrieval queries.
+* **`api/routes/retriever.py`**: Accepts queries, processes RAG pipeline synthesis, and returns answers with citations.
 
 ### 2. `core/` (Core Configuration)
 Global settings and setups that affect the entire application execution lifecycle.
@@ -54,6 +55,7 @@ Defines strict API contracts. Pydantic models validate input parameters and defi
 * **`models/document_loader.py`**: Standardizes request formats for websites and structures loaded document outputs.
 * **`models/text_splitter.py`**: Enforces strict overlap constraints (`chunk_overlap < chunk_size`).
 * **`models/vector_store.py`**: Standardizes payloads for indexing and similarity search results.
+* **`models/retriever.py`**: Standardizes payloads for query requests and grounded answers with source citations.
 
 ### 4. `services/` (Business Logic Layer)
 The engine of the pipeline. Services are self-contained classes or functions that handle standard LangChain API operations and processing without touching HTTP routers directly.
@@ -99,3 +101,14 @@ graph LR
   * Validates the schema of the configured collection (recreating the collection if the dimension changes or does not exist).
   * Indexes (upserts) embedding vectors with corresponding page contents and source metadata.
   * Runs similarity searches returning matching documents and Cosine scores.
+
+### 5. LLM Service (`app/services/llm.py`)
+* **Purpose**: Provide access to Groq LLM services.
+* **Responsibility**:
+  * Instantiates the `ChatGroq` model class with user configuration, managing connection credentials.
+
+### 6. RAG Chain Service (`app/services/rag_chain.py`)
+* **Purpose**: Orchestrate context retrieval and LLM completion pipelines.
+* **Responsibility**:
+  * Links standard VectorStoreRetriever configurations with the LLM using LCEL Runnable components.
+  * Systematically formats the contextual blocks, handles prompt compilation, executes generation, and structures the final answers and citations.

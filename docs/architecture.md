@@ -62,9 +62,12 @@ graph TD
    - The vectors are indexed into Qdrant Cloud.
    - The client can also run semantic test queries against the `/api/v1/vector-store/search` endpoint to retrieve matching chunks with similarity scores.
 
-4. **Step 4: RAG Query & LLM Synthesis (Future)**
-   - The user will interact with a chat interface to ask natural language questions.
-   - The backend will perform a similarity search to retrieve relevant source chunks, build a context-grounded prompt, and call the Groq LLM API to synthesize a response with citations.
+ 4. **Step 4: RAG Query & LLM Synthesis**
+   - The user interacts with the glassmorphic chat interface to ask natural language questions.
+   - The client invokes `/api/v1/retriever/query`.
+   - The backend retrieves relevant document chunks from Qdrant, dynamically injects similarity scores, and invokes the RAG chain composed using LangChain's LCEL Runnables.
+   - The Groq API LLM synthesizes a grounded answer based on the provided context.
+   - The client renders the response along with inline citations and a details drawer for source inspection.
 
 ---
 
@@ -75,4 +78,5 @@ graph TD
 - **Text Splitter Service (`backend/app/services/text_splitter.py`)**: Manages character-based recursive chunking logic and handles document chunk indexes.
 - **Embeddings Service (`backend/app/services/embeddings.py`)**: Instantiates Google Gemini Embeddings.
 - **Vector Store Service (`backend/app/services/vectorstore.py`)**: Connects to Qdrant Cloud, manages vector collection verification/recreation, indexes chunks, and performs similarity searches.
-- **RAG Core (Future)**: Will retrieve relevant chunks and formulate LLM prompts for Groq API.
+- **LLM Service (`backend/app/services/llm.py`)**: Instantiates ChatGroq for answer synthesis.
+- **RAG Core (`backend/app/services/rag_chain.py`)**: Combines Qdrant VectorStoreRetriever and ChatGroq using LCEL pipeline composition to produce structured query response formats.

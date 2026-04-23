@@ -210,3 +210,44 @@ Performs similarity retrieval against the index based on a natural language quer
     }
   ]
   ```
+
+---
+
+## 5. Retriever Endpoints
+
+These endpoints perform document retrieval and synthesize context-grounded answers using the Groq LLM API.
+
+### Query RAG Model
+
+Retrieves relevant document chunks and synthesizes a response using the configured Groq LLM model.
+
+* **URL:** `/api/v1/retriever/query`
+* **Method:** `POST`
+* **Content-Type:** `application/json`
+* **Request Body:**
+  ```json
+  {
+    "query": "What is LangChain?",
+    "k": 4
+  }
+  ```
+  - `query` (string, required): The natural language query.
+  - `k` (integer, optional, default: 4, range: 1-20): Number of context documents to retrieve.
+* **Response Model:** `QueryResponse`
+  ```json
+  {
+    "query": "What is LangChain?",
+    "answer": "LangChain is an open-source development framework...",
+    "source_documents": [
+      {
+        "page_content": "LangChain is an open-source development framework...",
+        "metadata": {
+          "source": "example.txt",
+          "chunk_index": 0
+        },
+        "score": 0.8954
+      }
+    ]
+  }
+  ```
+
