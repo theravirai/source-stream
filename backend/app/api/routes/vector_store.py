@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 from langchain_core.documents import Document as LCDocument
-from app.models.vector_store import IndexRequest, IndexResponse, SearchRequest, SearchResultResponse
+from app.models.vector_store import IndexRequest, IndexResponse, SearchRequest, SearchResultResponse, VectorStoreStatusResponse, VectorStoreClearResponse
 from app.services.vectorstore import VectorStoreService
 from app.core.config import settings
 
@@ -63,3 +63,39 @@ async def search_documents(request: SearchRequest):
     except Exception as e:
         logger.exception("Unexpected error occurred while searching documents")
         raise HTTPException(status_code=500, detail=f"Failed to search documents: {str(e)}")
+
+@router.get("/status", response_model=VectorStoreStatusResponse)
+async def get_vector_store_status():
+    """
+    Retrieve active Qdrant database status, chunk counts, and collection name.
+    """
+    logger.info("Received request for vector store status.")
+    try:
+        status_info = VectorStoreService.get_status()
+        return VectorStoreStatusResponse(**status_info)
+    except ValueError as val_err:
+        logger.error(f"Configuration error checking status: {str(val_err)}")
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as e:
+        logger.exception("Failed to check vector store status")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/clear", response_model=VectorStoreClearResponse)
+async def clear_vector_store():
+    """
+    Clear/reset the vector store collection by deleting and recreating it.
+    """
+    logger.info("Received request to clear vector store collection.")
+    try:
+        collection = VectorStoreService.clear_collection()
+        return VectorStoreClearResponse(
+            status="success",
+            message=f"Collection '{collection}' successfully cleared and recreated."
+        )
+    except ValueError as val_err:
+        logger.error(f"Configuration error during clear: {str(val_err)}")
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as e:
+        logger.exception("Failed to clear vector store")
+        raise HTTPException(status_code=500, detail=str(e))
+

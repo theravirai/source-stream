@@ -18,3 +18,14 @@ class SearchResultResponse(BaseModel):
     page_content: str
     metadata: dict
     score: float
+
+class VectorStoreStatusResponse(BaseModel):
+    collection_name: str
+    status: str
+    chunks_count: int
+    vector_size: int
+
+class VectorStoreClearResponse(BaseModel):
+    status: str
+    message: str
+

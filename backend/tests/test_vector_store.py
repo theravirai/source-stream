@@ -54,3 +54,31 @@ def test_search_endpoint_success(mock_similarity_search):
     assert data[0]["score"] == 0.95
     assert data[0]["metadata"]["source"] == "test.txt"
     mock_similarity_search.assert_called_once_with(query="test query", k=2)
+
+@patch("app.services.vectorstore.VectorStoreService.get_status")
+def test_status_endpoint_success(mock_get_status):
+    mock_get_status.return_value = {
+        "collection_name": "test_collection",
+        "status": "green",
+        "chunks_count": 42,
+        "vector_size": 1536
+    }
+    response = client.get("/api/v1/vector-store/status")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["collection_name"] == "test_collection"
+    assert data["status"] == "green"
+    assert data["chunks_count"] == 42
+    assert data["vector_size"] == 1536
+    mock_get_status.assert_called_once()
+
+@patch("app.services.vectorstore.VectorStoreService.clear_collection")
+def test_clear_endpoint_success(mock_clear_collection):
+    mock_clear_collection.return_value = "test_collection"
+    response = client.post("/api/v1/vector-store/clear")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "test_collection" in data["message"]
+    mock_clear_collection.assert_called_once()
+

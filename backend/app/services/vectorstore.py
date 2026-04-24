@@ -96,3 +96,83 @@ class VectorStoreService:
         vector_store = cls.get_vector_store()
         results = vector_store.similarity_search_with_score(query=query, k=k)
         return results
+
+    @classmethod
+    def get_status(cls) -> dict:
+        """
+        Retrieve current Qdrant collection statistics.
+        """
+        if not settings.QDRANT_URL:
+            logger.error("QDRANT_URL is not configured in settings")
+            raise ValueError("QDRANT_URL is not configured in settings")
+        
+        client = QdrantClient(
+            url=settings.QDRANT_URL,
+            api_key=settings.QDRANT_API_KEY
+        )
+        collection_name = settings.QDRANT_COLLECTION or "source_stream"
+        
+        try:
+            coll_info = client.get_collection(collection_name=collection_name)
+            points_count = coll_info.points_count
+            status = str(coll_info.status)
+            
+            # Determine vector dimension
+            from qdrant_client.http.models import VectorParams
+            if isinstance(coll_info.config.params.vectors, VectorParams):
+                vector_size = coll_info.config.params.vectors.size
+            else:
+                vector_size = 3072 # Fallback
+                
+            return {
+                "collection_name": collection_name,
+                "status": status,
+                "chunks_count": points_count,
+                "vector_size": vector_size
+            }
+        except Exception as e:
+            logger.warning(f"Failed to fetch stats for collection '{collection_name}': {e}")
+            return {
+                "collection_name": collection_name,
+                "status": "not_created",
+                "chunks_count": 0,
+                "vector_size": 0
+            }
+
+    @classmethod
+    def clear_collection(cls) -> str:
+        """
+        Drop and recreate the Qdrant collection to reset indexing.
+        """
+        if not settings.QDRANT_URL:
+            logger.error("QDRANT_URL is not configured")
+            raise ValueError("QDRANT_URL is not configured in settings")
+            
+        client = QdrantClient(
+            url=settings.QDRANT_URL,
+            api_key=settings.QDRANT_API_KEY
+        )
+        collection_name = settings.QDRANT_COLLECTION or "source_stream"
+        
+        embeddings = get_embeddings_service()
+        try:
+            sample_vector = embeddings.embed_query("test")
+            vector_size = len(sample_vector)
+        except Exception:
+            vector_size = 3072 # Fallback
+            
+        try:
+            client.delete_collection(collection_name=collection_name)
+        except Exception as e:
+            logger.warning(f"Could not delete collection on clear: {e}")
+            
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=qmodels.VectorParams(
+                size=vector_size,
+                distance=qmodels.Distance.COSINE
+            )
+        )
+        logger.info(f"Successfully cleared and recreated collection '{collection_name}'")
+        return collection_name
+
