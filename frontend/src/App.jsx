@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react'
-import { Layers, FileText, Database, Cpu } from 'lucide-react'
+import { Server, RotateCcw, AlertTriangle } from 'lucide-react'
+import PipelineRail from './components/PipelineRail'
 import DocumentLoader from './components/DocumentLoader'
 import TextSplitter from './components/TextSplitter'
 import VectorStore from './components/VectorStore'
 import ChatInterface from './components/ChatInterface'
 
 function App() {
+  const [activeStep, setActiveStep] = useState(0)
   const [status, setStatus] = useState('checking')
   const [serverInfo, setServerInfo] = useState(null)
+  
+  // Pipeline Data States
   const [loadedDocuments, setLoadedDocuments] = useState(null)
   const [splitChunks, setSplitChunks] = useState(null)
   const [isIndexed, setIsIndexed] = useState(false)
+  const [qdrantStats, setQdrantStats] = useState({ chunks_count: 0, status: 'unknown' })
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true)
 
+  // Fetch Backend health & Qdrant stats at boot
   useEffect(() => {
     const checkHealth = async () => {
       try {
@@ -27,111 +34,198 @@ function App() {
         setStatus('offline')
       }
     }
+
+    const checkVectorStoreStatus = async () => {
+      try {
+        const response = await fetch('/api/v1/vector-store/status')
+        if (response.ok) {
+          const data = await response.json()
+          setQdrantStats({
+            chunks_count: data.chunks_count,
+            status: data.status
+          })
+          if (data.chunks_count > 0) {
+            setIsIndexed(true)
+            // Auto-switch to RAG Query if already indexed
+            setActiveStep(3)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch Qdrant status:', err)
+      } finally {
+        setIsLoadingStatus(false)
+      }
+    }
+
     checkHealth()
-    const interval = setInterval(checkHealth, 10000)
+    checkVectorStoreStatus()
+    const interval = setInterval(checkHealth, 15000)
     return () => clearInterval(interval)
   }, [])
 
+  // Dynamic rail steps configuration
+  const steps = [
+    {
+      title: 'Document Loader',
+      status: loadedDocuments ? 'done' : activeStep === 0 ? 'active' : 'idle',
+      summary: loadedDocuments ? `${loadedDocuments.length} docs loaded` : 'Upload or crawl source'
+    },
+    {
+      title: 'Text Splitter',
+      status: splitChunks ? 'done' : activeStep === 1 ? 'active' : 'idle',
+      summary: splitChunks 
+        ? `${splitChunks.length} chunks · overlap ${splitChunks[0]?.metadata?.overlap || 200}`
+        : loadedDocuments ? 'Ready to split' : 'Requires documents'
+    },
+    {
+      title: 'Vector Store',
+      status: isIndexed ? 'done' : activeStep === 2 ? 'active' : 'idle',
+      summary: isIndexed
+        ? `${qdrantStats.chunks_count || splitChunks?.length || 0} chunks indexed`
+        : splitChunks ? 'Ready to index' : 'Requires chunks'
+    },
+    {
+      title: 'RAG Query',
+      status: isIndexed ? 'done' : activeStep === 3 ? 'active' : 'idle',
+      summary: isIndexed ? 'Playground active' : 'Requires vector index'
+    }
+  ]
+
+  // Clear/Reset entire pipeline
+  const handleResetPipeline = async () => {
+    if (!window.confirm('Are you sure you want to clear the knowledge base? This will delete all indexed vectors in Qdrant.')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/v1/vector-store/clear', {
+        method: 'POST'
+      })
+      if (response.ok) {
+        setLoadedDocuments(null)
+        setSplitChunks(null)
+        setIsIndexed(false)
+        setQdrantStats({ chunks_count: 0, status: 'not_created' })
+        setActiveStep(0)
+      } else {
+        alert('Failed to clear database collection.')
+      }
+    } catch (err) {
+      alert('Error connecting to backend to reset collection.')
+    }
+  }
+
   return (
-    <div className="dashboard-container">
-      <header className="header">
-        <h1>Source Stream</h1>
-        <p>
-          An enterprise-grade, high-performance RAG pipeline that enables indexing local PDFs and documentation websites into a searchable knowledge base.
-        </p>
+    <div className="min-h-screen bg-ink-bg text-slate-50 font-sans flex flex-col antialiased">
+      {/* Top Header */}
+      <header className="border-b border-border-hairline bg-ink-surface px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-bold text-accent tracking-tight text-lg">SOURCE STREAM</span>
+            <span className="text-[10px] font-mono border border-border-hairline px-1.5 py-0.5 rounded text-slate-400">RAG DEVTOOL</span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1 font-mono">Precision retrieval-augmented generation engine validation workspace.</p>
+        </div>
+
+        {/* Health status badge & Quick controls */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleResetPipeline}
+            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-400 border border-border-hairline hover:border-red-900/50 bg-ink-bg px-2.5 py-1.5 rounded transition-all font-mono"
+            title="Wipe database and reset pipeline"
+          >
+            <RotateCcw size={12} />
+            <span>Reset knowledge base</span>
+          </button>
+          
+          <div className="flex items-center gap-2 border border-border-hairline bg-ink-bg px-2.5 py-1.5 rounded text-xs font-mono">
+            <Server size={12} className={status === 'online' ? 'text-emerald-500' : 'text-red-500'} />
+            <span className="text-slate-400">API:</span>
+            <span className={status === 'online' ? 'text-emerald-500' : 'text-red-500'}>
+              {status === 'online' ? 'online' : status === 'offline' ? 'offline' : 'checking'}
+            </span>
+          </div>
+        </div>
       </header>
 
-      <section className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Pipeline Status</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-              Monitoring backend connection and state.
-            </p>
+      {/* Main Content Area */}
+      <main className="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col gap-6">
+        
+        {/* Persistent Pipeline Rail */}
+        <PipelineRail activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} />
+
+        {/* Active Stage Panel */}
+        <div className="border border-border-hairline bg-ink-surface p-4 md:p-6 flex-grow flex flex-col justify-between">
+          
+          {/* Active View Container */}
+          <div className="flex-grow">
+            {activeStep === 0 && (
+              <DocumentLoader 
+                onDocumentsLoaded={(docs) => {
+                  setLoadedDocuments(docs)
+                  setSplitChunks(null)
+                  setIsIndexed(false)
+                }} 
+              />
+            )}
+
+            {activeStep === 1 && (
+              <TextSplitter 
+                documents={loadedDocuments}
+                chunks={splitChunks}
+                onChunksGenerated={(chunks) => {
+                  setSplitChunks(chunks)
+                  setIsIndexed(false)
+                }}
+              />
+            )}
+
+            {activeStep === 2 && (
+              <VectorStore 
+                chunks={splitChunks} 
+                onIndexingComplete={(complete) => {
+                  setIsIndexed(complete)
+                  // Refresh Qdrant stats
+                  fetch('/api/v1/vector-store/status')
+                    .then(res => res.json())
+                    .then(data => setQdrantStats({ chunks_count: data.chunks_count, status: data.status }))
+                    .catch(err => console.error(err))
+                }} 
+              />
+            )}
+
+            {activeStep === 3 && (
+              <ChatInterface />
+            )}
           </div>
-          <div className={`status-badge ${status}`}>
-            <span className="pulse-dot"></span>
-            {status === 'online' ? 'Online' : status === 'offline' ? 'Offline' : 'Checking...'}
-          </div>
+
+          {/* Helper alert when previous stages are missing */}
+          {activeStep > 0 && !isIndexed && (
+            <div className="border-t border-border-hairline mt-6 pt-4 flex items-start gap-2.5 text-xs font-mono text-slate-400">
+              <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                {activeStep === 1 && !loadedDocuments && (
+                  <p>Incomplete stage. Go to <button className="text-accent underline hover:text-accent-hover" onClick={() => setActiveStep(0)}>Document Loader</button> to load context files before splitting.</p>
+                )}
+                {activeStep === 2 && !splitChunks && (
+                  <p>Incomplete stage. Go to <button className="text-accent underline hover:text-accent-hover" onClick={() => setActiveStep(1)}>Text Splitter</button> to chunk documents before indexing to Qdrant.</p>
+                )}
+                {activeStep === 3 && !isIndexed && (
+                  <p>Incomplete stage. Go to <button className="text-accent underline hover:text-accent-hover" onClick={() => setActiveStep(2)}>Vector Store</button> to index document chunks before initiating queries.</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      </main>
 
-        {status === 'online' && serverInfo && (
-          <div style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
-            <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
-              <strong>Uptime:</strong> {serverInfo.uptime_seconds}s | <strong>Server Time:</strong> {serverInfo.timestamp}
-            </p>
-          </div>
-        )}
-      </section>
-
-      <section className="glass-card">
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>1. Ingest Knowledge Source</h2>
-        <DocumentLoader onDocumentsLoaded={(docs) => {
-          setLoadedDocuments(docs)
-          setSplitChunks(null)
-          setIsIndexed(false)
-        }} />
-      </section>
-
-      <section className="glass-card">
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>2. Text Chunking</h2>
-        <TextSplitter 
-          documents={loadedDocuments}
-          chunks={splitChunks}
-          onChunksGenerated={(chunks) => {
-            setSplitChunks(chunks)
-            setIsIndexed(false)
-          }}
-        />
-      </section>
-
-      <section className="glass-card">
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>3. Vector Database Indexing</h2>
-        <VectorStore chunks={splitChunks} onIndexingComplete={setIsIndexed} />
-      </section>
-
-      <section className="glass-card">
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', fontFamily: 'Outfit' }}>4. RAG Query & Chat</h2>
-        {isIndexed ? (
-          <ChatInterface />
-        ) : (
-          <div className="drop-zone" style={{ borderStyle: 'solid', cursor: 'default', opacity: 0.6 }}>
-            <Cpu size={40} className="cloud-icon" />
-            <p style={{ color: 'var(--text-secondary)' }}>
-              Please index your document chunks into the vector store to enable interactive RAG Chat.
-            </p>
-          </div>
-        )}
-      </section>
-
-      <section>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '2rem', textAlign: 'center', fontFamily: 'Outfit' }}>System Capabilities</h2>
-        <div className="grid-features">
-          <div className="feature-item">
-            <div className="feature-icon"><FileText size={24} /></div>
-            <h3>PDF Ingestion</h3>
-            <p>Chunk and process unstructured text from complex local PDF documents.</p>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon"><Layers size={24} /></div>
-            <h3>Website Scraper</h3>
-            <p>Direct website spidering to pull clean markdown and documents from documentation hubs.</p>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon"><Database size={24} /></div>
-            <h3>Qdrant Storage</h3>
-            <p>Store Gemini Embeddings with exact vector parameters in a secure cloud store.</p>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon"><Cpu size={24} /></div>
-            <h3>RAG Engine</h3>
-            <p>Synthesize grounded answers using Groq API LLM with citations and metadata verification.</p>
-          </div>
+      {/* Footer */}
+      <footer className="border-t border-border-hairline bg-ink-surface px-6 py-4 flex flex-wrap justify-between items-center text-xs font-mono text-slate-500">
+        <div>&copy; 2026 Source Stream. All systems operational.</div>
+        <div className="flex gap-4">
+          <span>Qdrant Collection: {qdrantStats.collection_name || 'source_stream'}</span>
+          <span>Chunks Count: {qdrantStats.chunks_count}</span>
         </div>
-      </section>
-
-      <footer>
-        <p>&copy; 2026 Source Stream. All systems operational.</p>
       </footer>
     </div>
   )
