@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Layers, HelpCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Layers, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
 
 function TextSplitter({ documents, onChunksGenerated, chunks }) {
   const [chunkSize, setChunkSize] = useState(1000)
@@ -54,133 +54,140 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
     : 0
 
   return (
-    <div className="doc-loader-wrapper">
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1rem' }}>
+    <div className="flex flex-col gap-4 font-sans text-sm">
+      <p className="text-slate-400 text-xs font-mono">
         Divide the loaded document text into small, overlapping chunks to ensure the vector index receives clean, context-rich segments.
       </p>
 
       {!documents || documents.length === 0 ? (
-        <div className="drop-zone" style={{ borderStyle: 'solid', cursor: 'default', opacity: 0.6 }}>
-          <Layers size={40} className="cloud-icon" />
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Please ingest a knowledge source first to enable text chunking.
-          </p>
+        <div className="border border-border-hairline bg-ink-bg p-8 flex flex-col items-center justify-center text-center text-slate-500 rounded gap-2.5">
+          <Layers size={36} className="text-slate-600" />
+          <div>
+            <p className="text-xs text-slate-400 font-mono">Ingestion buffer empty</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Please load a knowledge source first to enable text chunking configurations.</p>
+          </div>
         </div>
       ) : (
-        <div className="website-inputs">
-          <div className="input-group">
-            <div className="slider-header">
-              <label htmlFor="size-input">Chunk Size (characters)</label>
-              <span className="slider-value">{chunkSize}</span>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 bg-ink-bg border border-border-hairline p-4 rounded">
+            {/* Chunk Size */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between items-center text-xs">
+                <label htmlFor="size-input" className="font-semibold text-slate-300">Chunk size (characters)</label>
+                <span className="font-mono text-accent">{chunkSize}</span>
+              </div>
+              <input
+                id="size-input"
+                type="range"
+                min="100"
+                max="3000"
+                step="50"
+                value={chunkSize}
+                onChange={(e) => setChunkSize(parseInt(e.target.value))}
+                className="w-full h-1 bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-border-hairline"
+              />
+              <span className="text-[10px] font-mono text-slate-500">The maximum character count per text segment.</span>
             </div>
-            <input
-              id="size-input"
-              type="range"
-              min="100"
-              max="3000"
-              step="50"
-              value={chunkSize}
-              onChange={(e) => setChunkSize(parseInt(e.target.value))}
-              className="custom-slider"
-            />
-            <span className="slider-hint">The maximum character count per text segment.</span>
-          </div>
 
-          <div className="input-group">
-            <div className="slider-header">
-              <label htmlFor="overlap-input">Chunk Overlap (characters)</label>
-              <span className="slider-value">{chunkOverlap}</span>
+            {/* Chunk Overlap */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between items-center text-xs">
+                <label htmlFor="overlap-input" className="font-semibold text-slate-300">Chunk overlap (characters)</label>
+                <span className="font-mono text-accent">{chunkOverlap}</span>
+              </div>
+              <input
+                id="overlap-input"
+                type="range"
+                min="0"
+                max={Math.max(0, chunkSize - 50)}
+                step="10"
+                value={chunkOverlap}
+                onChange={(e) => setChunkOverlap(parseInt(e.target.value))}
+                className="w-full h-1 bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-border-hairline"
+              />
+              <span className="text-[10px] font-mono text-slate-500">Overlap size to maintain context between adjacent chunks.</span>
             </div>
-            <input
-              id="overlap-input"
-              type="range"
-              min="0"
-              max={Math.max(0, chunkSize - 50)}
-              step="10"
-              value={chunkOverlap}
-              onChange={(e) => setChunkOverlap(parseInt(e.target.value))}
-              className="custom-slider"
-            />
-            <span className="slider-hint">Overlap size to maintain context between adjacent chunks.</span>
           </div>
 
           {error && (
-            <div className="error-card">
-              <AlertCircle size={20} />
+            <div className="border border-red-900/50 bg-red-950/20 text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <button
-            className="load-action-btn"
-            style={{ background: 'linear-gradient(135deg, var(--color-accent) 0%, #4f46e5 100%)' }}
+            className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
             disabled={loading}
             onClick={handleSplit}
           >
             {loading ? (
               <>
-                <Loader size={20} className="spinner" />
-                <span>Splitting Documents...</span>
+                <Loader size={14} className="animate-spin text-white" />
+                <span>Splitting documents...</span>
               </>
             ) : (
-              <span>Chunk Documents</span>
+              <span>Split documents</span>
             )}
           </button>
 
           {chunks && chunks.length > 0 && (
-            <div className="results-pane">
-              <div className="results-header">
-                <div className="success-title">
-                  <CheckCircle2 size={22} className="success-icon" style={{ color: 'var(--color-accent)' }} />
-                  <h3>Splitting Complete</h3>
+            <div className="border border-border-hairline bg-ink-bg rounded p-4 flex flex-col gap-4 mt-2">
+              <div className="flex flex-wrap justify-between items-center border-b border-border-hairline pb-3 gap-2">
+                <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-mono font-semibold">
+                  <CheckCircle2 size={16} />
+                  <span>Splitting complete</span>
                 </div>
-                <div className="stats-row">
-                  <div className="stat-pill">
-                    <strong>{chunks.length}</strong> Chunks
-                  </div>
-                  <div className="stat-pill">
-                    <strong>{averageChunkLength}</strong> Avg Chars
-                  </div>
+                <div className="flex gap-2 text-[10px] font-mono text-slate-400">
+                  <span className="border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
+                    <strong className="text-slate-200">{chunks.length}</strong> chunks
+                  </span>
+                  <span className="border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
+                    <strong className="text-slate-200">{averageChunkLength}</strong> avg chars
+                  </span>
                 </div>
               </div>
 
-              <div className="documents-list">
+              <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
                 {chunks.map((chunk, idx) => (
-                  <div className="doc-item" key={idx}>
-                    <div
-                      className={`doc-item-header ${expandedChunkIndex === idx ? 'expanded' : ''}`}
+                  <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden" key={idx}>
+                    <button 
+                      className="flex justify-between items-center w-full px-3 py-2 hover:bg-ink-hover transition-colors text-left"
                       onClick={() => toggleExpandChunk(idx)}
                     >
-                      <div className="doc-meta-title">
-                        <span className="doc-index-badge">Chunk #{idx + 1}</span>
-                        <p className="doc-source-name">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[10px] font-mono border border-border-hairline px-1 rounded text-slate-400 bg-ink-surface">#{idx + 1}</span>
+                        <p className="text-xs text-slate-300 font-mono truncate">
                           {(() => {
                             const source = chunk.metadata?.source;
                             if (!source || typeof source !== 'string') return 'chunk';
-                            const cleanParts = source.split('/').filter(Boolean);
-                            return cleanParts.pop() || source;
+                            return source.split(/[/\\]/).pop() || source;
                           })()}
                         </p>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span className="page-badge" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--color-success)' }}>
+                      <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
+                        <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface text-emerald-500">
                           {chunk.page_content.length} chars
                         </span>
                         {chunk.metadata?.page !== undefined && chunk.metadata?.page !== null && (
-                          <span className="page-badge">Page {Number(chunk.metadata.page) + 1}</span>
+                          <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface">Page {Number(chunk.metadata.page) + 1}</span>
                         )}
-                        {expandedChunkIndex === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {expandedChunkIndex === idx ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </div>
-                    </div>
+                    </button>
                     {expandedChunkIndex === idx && (
-                      <div className="doc-item-body">
-                        <div className="metadata-viewer">
-                          <h4>Chunk Metadata</h4>
-                          <pre>{JSON.stringify(chunk.metadata, null, 2)}</pre>
+                      <div className="p-3 border-t border-border-hairline bg-ink-surface flex flex-col gap-2 text-xs">
+                        <div>
+                          <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Chunk Metadata</h4>
+                          <pre className="bg-[#0a0c10] border border-border-hairline p-2 font-mono text-[10px] text-slate-400 overflow-x-auto select-all rounded max-h-[120px]">
+                            {JSON.stringify(chunk.metadata, null, 2)}
+                          </pre>
                         </div>
-                        <div className="content-viewer">
-                          <h4>Segment Content</h4>
-                          <p>{chunk.page_content}</p>
+                        <div>
+                          <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Segment Content</h4>
+                          <div className="bg-[#0a0c10] border border-border-hairline p-2 text-xs text-slate-300 font-sans whitespace-pre-wrap rounded max-h-[150px] overflow-y-auto">
+                            {chunk.page_content}
+                          </div>
                         </div>
                       </div>
                     )}

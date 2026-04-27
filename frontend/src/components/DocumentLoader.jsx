@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { FileText, Link, UploadCloud, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { FileText, Link as LinkIcon, UploadCloud, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 
 function DocumentLoader({ onDocumentsLoaded }) {
   const [activeTab, setActiveTab] = useState('text') // 'text' | 'pdf' | 'website'
@@ -12,7 +12,6 @@ function DocumentLoader({ onDocumentsLoaded }) {
   const [expandedDocIndex, setExpandedDocIndex] = useState(null)
   
   const fileInputRef = useRef(null)
-  const dragRef = useRef(null)
 
   const handleDrag = (e) => {
     e.preventDefault()
@@ -123,39 +122,51 @@ function DocumentLoader({ onDocumentsLoaded }) {
     setExpandedDocIndex(expandedDocIndex === index ? null : index)
   }
 
-  // Calculate totals
   const totalCharacters = results?.reduce((sum, doc) => sum + doc.page_content.length, 0) || 0
 
   return (
-    <div className="doc-loader-wrapper">
-      <div className="loader-tabs">
+    <div className="flex flex-col gap-4 font-sans text-sm">
+      {/* Selector Tabs */}
+      <div className="flex border border-border-hairline bg-ink-bg p-0.5 rounded">
         <button 
-          className={`tab-btn ${activeTab === 'text' ? 'active' : ''}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-xs font-mono uppercase ${
+            activeTab === 'text' 
+              ? 'bg-ink-hover text-accent font-semibold' 
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
           onClick={() => handleTabChange('text')}
         >
-          <FileText size={18} />
+          <FileText size={14} />
           <span>Plain Text</span>
         </button>
         <button 
-          className={`tab-btn ${activeTab === 'pdf' ? 'active' : ''}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-xs font-mono uppercase ${
+            activeTab === 'pdf' 
+              ? 'bg-ink-hover text-accent font-semibold' 
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
           onClick={() => handleTabChange('pdf')}
         >
-          <FileText size={18} />
+          <FileText size={14} />
           <span>PDF Document</span>
         </button>
         <button 
-          className={`tab-btn ${activeTab === 'website' ? 'active' : ''}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded transition-all text-xs font-mono uppercase ${
+            activeTab === 'website' 
+              ? 'bg-ink-hover text-accent font-semibold' 
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
           onClick={() => handleTabChange('website')}
         >
-          <Link size={18} />
-          <span>Documentation Website</span>
+          <LinkIcon size={14} />
+          <span>Website URL</span>
         </button>
       </div>
 
-      <div className="loader-content">
+      <div className="flex flex-col gap-4">
         {activeTab !== 'website' ? (
           <div 
-            className="drop-zone"
+            className="border border-dashed border-border-hairline bg-ink-bg rounded p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:border-accent/40"
             onDragOver={handleDrag}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -167,19 +178,19 @@ function DocumentLoader({ onDocumentsLoaded }) {
               ref={fileInputRef}
               onChange={handleFileChange}
               accept={activeTab === 'text' ? '.txt' : '.pdf'}
-              style={{ display: 'none' }}
+              className="hidden"
             />
             {file ? (
-              <div className="selected-file-info" onClick={(e) => e.stopPropagation()}>
-                <div className="file-meta">
-                  <FileText className="file-icon-glow" size={32} />
-                  <div>
-                    <p className="file-name">{file.name}</p>
-                    <p className="file-size">{formatBytes(file.size)}</p>
+              <div className="flex justify-between items-center w-full max-w-md bg-ink-hover border border-border-hairline p-3 rounded font-mono" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-3">
+                  <FileText size={28} className="text-accent shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-200 truncate font-semibold">{file.name}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">{formatBytes(file.size)}</p>
                   </div>
                 </div>
                 <button 
-                  className="clear-file-btn"
+                  className="text-slate-400 hover:text-red-400 transition-colors p-1"
                   onClick={() => {
                     setFile(null)
                     setResults(null)
@@ -189,34 +200,35 @@ function DocumentLoader({ onDocumentsLoaded }) {
                   }}
                   title="Remove file"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             ) : (
-              <div className="drop-prompt">
-                <UploadCloud size={48} className="cloud-icon" />
-                <p>Drag & drop your <strong>.{activeTab}</strong> file here, or click to browse</p>
-                <span>Maximum size: 20MB</span>
+              <div className="flex flex-col items-center text-center gap-1.5">
+                <UploadCloud size={36} className="text-slate-500" />
+                <p className="text-xs text-slate-300">Drag & drop your <span className="font-mono text-accent">.{activeTab}</span> file here, or click to browse</p>
+                <span className="text-[10px] text-slate-500 font-mono">Maximum size: 20MB</span>
               </div>
             )}
           </div>
         ) : (
-          <div className="website-inputs">
-            <div className="input-group">
-              <label htmlFor="url-input">Documentation URL</label>
+          <div className="flex flex-col gap-3.5 bg-ink-bg border border-border-hairline p-4 rounded">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="url-input" className="text-xs font-semibold text-slate-300">Documentation website base URL</label>
               <input 
                 id="url-input"
                 type="url"
                 placeholder="https://docs.example.com"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="custom-input"
+                className="bg-[#0a0c10] border border-border-hairline text-slate-200 text-xs font-mono px-3 py-2 rounded focus:outline-none focus:border-accent w-full"
               />
             </div>
-            <div className="input-group">
-              <div className="slider-header">
-                <label htmlFor="depth-input">Crawl Depth</label>
-                <span className="slider-value">{maxDepth} {maxDepth === 1 ? 'level' : 'levels'}</span>
+            
+            <div className="flex flex-col gap-1.5">
+              <div className="flex justify-between items-center text-xs">
+                <label htmlFor="depth-input" className="font-semibold text-slate-300">Crawler recursion depth</label>
+                <span className="font-mono text-accent">{maxDepth} {maxDepth === 1 ? 'level' : 'levels'}</span>
               </div>
               <input 
                 id="depth-input"
@@ -225,28 +237,28 @@ function DocumentLoader({ onDocumentsLoaded }) {
                 max="5"
                 value={maxDepth}
                 onChange={(e) => setMaxDepth(parseInt(e.target.value))}
-                className="custom-slider"
+                className="w-full h-1 bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-border-hairline"
               />
-              <span className="slider-hint">Levels deep to follow relative internal hyperlinks</span>
+              <span className="text-[10px] font-mono text-slate-500">Maximum sub-link click depth to recursively index documentation pages.</span>
             </div>
           </div>
         )}
 
         {error && (
-          <div className="error-card">
-            <AlertCircle size={20} />
+          <div className="border border-red-900/50 bg-red-950/20 text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         <button 
-          className="load-action-btn"
+          className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex justify-center items-center gap-2"
           disabled={loading || (activeTab === 'website' ? !url : !file)}
           onClick={handleLoad}
         >
           {loading ? (
             <>
-              <Loader size={20} className="spinner" />
+              <Loader size={14} className="animate-spin text-white" />
               <span>
                 {activeTab === 'website' 
                   ? 'Crawling web pages...' 
@@ -256,61 +268,64 @@ function DocumentLoader({ onDocumentsLoaded }) {
               </span>
             </>
           ) : (
-            <span>Load Source</span>
+            <span>Load source</span>
           )}
         </button>
 
         {results && (
-          <div className="results-pane">
-            <div className="results-header">
-              <div className="success-title">
-                <CheckCircle2 size={22} className="success-icon" />
-                <h3>Ingested Successfully</h3>
+          <div className="border border-border-hairline bg-ink-bg rounded p-4 flex flex-col gap-4 mt-2">
+            <div className="flex flex-wrap justify-between items-center border-b border-border-hairline pb-3 gap-2">
+              <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-mono font-semibold">
+                <CheckCircle2 size={16} />
+                <span>Source ingested successfully</span>
               </div>
-              <div className="stats-row">
-                <div className="stat-pill">
-                  <strong>{results.length}</strong> {results.length === 1 ? 'Document' : 'Documents'}
-                </div>
-                <div className="stat-pill">
-                  <strong>{totalCharacters.toLocaleString()}</strong> Characters
-                </div>
+              <div className="flex gap-2 text-[10px] font-mono text-slate-400">
+                <span className="border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
+                  <strong className="text-slate-200">{results.length}</strong> {results.length === 1 ? 'doc' : 'docs'}
+                </span>
+                <span className="border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
+                  <strong className="text-slate-200">{totalCharacters.toLocaleString()}</strong> chars
+                </span>
               </div>
             </div>
 
-            <div className="documents-list">
+            <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
               {results.map((doc, idx) => (
-                <div className="doc-item" key={idx}>
-                  <div 
-                    className={`doc-item-header ${expandedDocIndex === idx ? 'expanded' : ''}`}
+                <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden" key={idx}>
+                  <button 
+                    className="flex justify-between items-center w-full px-3 py-2 hover:bg-ink-hover transition-colors text-left"
                     onClick={() => toggleExpandDoc(idx)}
                   >
-                    <div className="doc-meta-title">
-                      <span className="doc-index-badge">#{idx + 1}</span>
-                      <p className="doc-source-name">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[10px] font-mono border border-border-hairline px-1 rounded text-slate-400 bg-ink-surface">#{idx + 1}</span>
+                      <p className="text-xs text-slate-300 font-mono truncate">
                         {(() => {
                           const source = doc.metadata?.source;
                           if (!source || typeof source !== 'string') return 'document';
-                          const cleanParts = source.split('/').filter(Boolean);
-                          return cleanParts.pop() || source;
+                          return source.split(/[/\\]/).pop() || source;
                         })()}
                       </p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
                       {doc.metadata?.page !== undefined && doc.metadata?.page !== null && (
-                        <span className="page-badge">Page {Number(doc.metadata.page) + 1}</span>
+                        <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface">Page {Number(doc.metadata.page) + 1}</span>
                       )}
-                      {expandedDocIndex === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      {expandedDocIndex === idx ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </div>
-                  </div>
+                  </button>
                   {expandedDocIndex === idx && (
-                    <div className="doc-item-body">
-                      <div className="metadata-viewer">
-                        <h4>Preserved Metadata</h4>
-                        <pre>{JSON.stringify(doc.metadata, null, 2)}</pre>
+                    <div className="p-3 border-t border-border-hairline bg-ink-surface flex flex-col gap-2 text-xs">
+                      <div>
+                        <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Preserved Metadata</h4>
+                        <pre className="bg-[#0a0c10] border border-border-hairline p-2 font-mono text-[10px] text-slate-400 overflow-x-auto select-all rounded max-h-[120px]">
+                          {JSON.stringify(doc.metadata, null, 2)}
+                        </pre>
                       </div>
-                      <div className="content-viewer">
-                        <h4>Content Snippet</h4>
-                        <p>{doc.page_content}</p>
+                      <div>
+                        <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Content Snippet</h4>
+                        <div className="bg-[#0a0c10] border border-border-hairline p-2 text-xs text-slate-300 font-sans whitespace-pre-wrap rounded max-h-[150px] overflow-y-auto">
+                          {doc.page_content}
+                        </div>
                       </div>
                     </div>
                   )}
