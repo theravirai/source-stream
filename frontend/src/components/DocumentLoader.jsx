@@ -317,7 +317,7 @@ function DocumentLoader({ onDocumentsLoaded }) {
                     <div className="p-3 border-t border-border-hairline bg-ink-surface flex flex-col gap-2 text-xs">
                       <div>
                         <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Preserved Metadata</h4>
-                        <pre className="bg-[#0a0c10] border border-border-hairline p-2 font-mono text-[10px] text-slate-400 overflow-x-auto select-all rounded max-h-[120px]">
+                        <pre className="bg-[#0a0c10] border border-border-hairline p-2 font-mono text-[10px] text-slate-400 overflow-auto select-all rounded max-h-[120px]">
                           {JSON.stringify(doc.metadata, null, 2)}
                         </pre>
                       </div>
