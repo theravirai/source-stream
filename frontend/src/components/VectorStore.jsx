@@ -85,63 +85,59 @@ function VectorStore({ chunks, onIndexingComplete }) {
   }
 
   return (
-    <div className="doc-loader-wrapper">
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '1rem' }}>
+    <div className="flex flex-col gap-4 font-sans text-sm">
+      <p className="text-slate-400 text-xs font-mono">
         Generate high-dimensional Gemini embeddings for the split text segments and index them securely into Qdrant Cloud. Perform semantic search queries to verify retrieval precision.
       </p>
 
       {!chunks || chunks.length === 0 ? (
-        <div className="drop-zone" style={{ borderStyle: 'solid', cursor: 'default', opacity: 0.6 }}>
-          <Database size={40} className="cloud-icon" />
-          <p style={{ color: 'var(--text-secondary)' }}>
-            Please split your loaded documents into chunks to enable vector store indexing.
-          </p>
+        <div className="border border-border-hairline bg-ink-bg p-8 flex flex-col items-center justify-center text-center text-slate-500 rounded gap-2.5">
+          <Database size={36} className="text-slate-600" />
+          <div>
+            <p className="text-xs text-slate-400 font-mono">Vector index queue empty</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Please split your loaded documents into chunks to enable vector store indexing.</p>
+          </div>
         </div>
       ) : (
-        <div className="website-inputs">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', background: 'rgba(255, 255, 255, 0.01)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="flex flex-col gap-5">
+          {/* Indexing trigger panel */}
+          <div className="flex flex-col gap-3.5 bg-ink-bg border border-border-hairline p-4 rounded">
+            <div className="flex flex-wrap justify-between items-center gap-3">
               <div>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', fontFamily: 'Outfit' }}>Ingestion Data Ready</h4>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                <h4 className="text-xs font-bold text-slate-300">Ingestion segments ready</h4>
+                <p className="text-[10px] text-slate-500 font-mono mt-0.5">
                   <strong>{chunks.length}</strong> text segments prepared for Gemini embeddings.
                 </p>
               </div>
               <button
-                className="load-action-btn"
-                style={{
-                  margin: 0,
-                  width: 'auto',
-                  padding: '0.75rem 2rem',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                }}
+                className="bg-accent hover:bg-accent-hover text-white py-1.5 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
                 disabled={loading}
                 onClick={handleIndex}
               >
                 {loading ? (
                   <>
-                    <Loader size={18} className="spinner" />
-                    <span>Indexing Vectors...</span>
+                    <Loader size={14} className="animate-spin text-white" />
+                    <span>Indexing vectors...</span>
                   </>
                 ) : (
-                  <span>Index Chunks</span>
+                  <span>Index chunks</span>
                 )}
               </button>
             </div>
 
             {error && (
-              <div className="error-card" style={{ margin: 0 }}>
-                <AlertCircle size={20} />
+              <div className="border border-red-900/50 bg-red-950/20 text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {indexingComplete && (
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1rem', borderRadius: '8px' }}>
-                <CheckCircle2 size={20} style={{ color: 'var(--color-success)', flexShrink: 0, marginTop: '2px' }} />
+              <div className="border border-emerald-900/50 bg-emerald-950/10 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+                <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                 <div>
-                  <p style={{ fontWeight: 600, color: '#10b981', fontSize: '0.95rem' }}>Indexing Complete</p>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                  <p className="font-semibold text-emerald-500">Indexing complete</p>
+                  <p className="text-slate-400 mt-0.5 text-[10px]">
                     Successfully embedded and written <strong>{indexedCount}</strong> vectors into collection <code>{collectionName}</code>.
                   </p>
                 </div>
@@ -149,29 +145,29 @@ function VectorStore({ chunks, onIndexingComplete }) {
             )}
           </div>
 
-          <div style={{ marginTop: '2rem' }}>
-            <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'Outfit' }}>
-              <Search size={20} style={{ color: 'var(--color-accent)' }} />
-              Test Similarity Retrieval
+          {/* Test Search Segment */}
+          <div className="border-t border-border-hairline pt-4">
+            <h3 className="text-xs font-bold text-slate-300 flex items-center gap-2 mb-3.5 font-mono uppercase tracking-wider">
+              <Search size={14} className="text-accent" />
+              <span>Test similarity retrieval</span>
             </h3>
 
-            <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '280px' }}>
-                  <label htmlFor="search-input" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Search Query</label>
+            <form onSubmit={handleSearch} className="flex flex-col gap-3.5 bg-ink-bg border border-border-hairline p-4 rounded">
+              <div className="flex gap-4 flex-wrap">
+                <div className="flex-grow min-w-[200px] flex flex-col gap-1.5">
+                  <label htmlFor="search-input" className="text-xs font-semibold text-slate-300">Search query</label>
                   <input
                     id="search-input"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Enter keywords or questions..."
-                    className="website-url-input"
-                    style={{ width: '100%' }}
+                    className="bg-[#0a0c10] border border-border-hairline text-slate-200 text-xs font-mono px-3 py-2 rounded focus:outline-none focus:border-accent w-full"
                     required
                   />
                 </div>
-                <div style={{ width: '100px' }}>
-                  <label htmlFor="search-k" style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Results (k)</label>
+                <div className="w-[100px] flex flex-col gap-1.5">
+                  <label htmlFor="search-k" className="text-xs font-semibold text-slate-300">Results (k)</label>
                   <input
                     id="search-k"
                     type="number"
@@ -179,92 +175,89 @@ function VectorStore({ chunks, onIndexingComplete }) {
                     max="20"
                     value={searchK}
                     onChange={(e) => setSearchK(parseInt(e.target.value) || 4)}
-                    className="website-url-input"
-                    style={{ width: '100%', textAlign: 'center' }}
+                    className="bg-[#0a0c10] border border-border-hairline text-slate-200 text-xs font-mono px-3 py-2 rounded focus:outline-none focus:border-accent w-full text-center"
                   />
                 </div>
               </div>
 
               {searchError && (
-                <div className="error-card" style={{ margin: 0 }}>
-                  <AlertCircle size={20} />
+                <div className="border border-red-900/50 bg-red-950/20 text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
                   <span>{searchError}</span>
                 </div>
               )}
 
               <button
                 type="submit"
-                className="load-action-btn"
-                style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+                className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
                 disabled={searching}
               >
                 {searching ? (
                   <>
-                    <Loader size={20} className="spinner" />
-                    <span>Searching Vector Space...</span>
+                    <Loader size={14} className="animate-spin text-white" />
+                    <span>Searching vector space...</span>
                   </>
                 ) : (
                   <>
-                    <Search size={20} />
-                    <span>Execute Search Query</span>
+                    <Search size={14} />
+                    <span>Search vector store</span>
                   </>
                 )}
               </button>
             </form>
 
             {searchResults && (
-              <div className="results-pane" style={{ marginTop: '1.5rem' }}>
-                <div className="results-header">
-                  <div className="success-title">
-                    <CheckCircle2 size={22} className="success-icon" style={{ color: 'var(--color-accent)' }} />
-                    <h3>Retrieval Complete</h3>
+              <div className="border border-border-hairline bg-ink-bg rounded p-4 flex flex-col gap-4 mt-4">
+                <div className="flex flex-wrap justify-between items-center border-b border-border-hairline pb-3 gap-2">
+                  <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-mono font-semibold">
+                    <CheckCircle2 size={16} />
+                    <span>Retrieval complete</span>
                   </div>
-                  <div className="stats-row">
-                    <div className="stat-pill">
-                      Found <strong>{searchResults.length}</strong> matches
-                    </div>
+                  <div className="text-[10px] font-mono text-slate-400 border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
+                    Found <strong className="text-slate-200">{searchResults.length}</strong> matches
                   </div>
                 </div>
 
-                <div className="documents-list">
+                <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
                   {searchResults.map((result, idx) => (
-                    <div className="doc-item" key={idx}>
-                      <div
-                        className={`doc-item-header ${expandedResultIndex === idx ? 'expanded' : ''}`}
+                    <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden" key={idx}>
+                      <button 
+                        className="flex justify-between items-center w-full px-3 py-2 hover:bg-ink-hover transition-colors text-left"
                         onClick={() => toggleExpandResult(idx)}
                       >
-                        <div className="doc-meta-title">
-                          <span className="doc-index-badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--color-accent)' }}>
-                            Match #{idx + 1}
-                          </span>
-                          <p className="doc-source-name">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-[10px] font-mono border border-border-hairline px-1 rounded text-accent bg-ink-surface">Match #{idx + 1}</span>
+                          <p className="text-xs text-slate-300 font-mono truncate">
                             {(() => {
                               const source = result.metadata?.source;
                               if (!source || typeof source !== 'string') return 'document';
-                              const cleanParts = source.split('/').filter(Boolean);
-                              return cleanParts.pop() || source;
+                              return source.split(/[/\\]/).pop() || source;
                             })()}
                           </p>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span className="page-badge" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                        <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
+                          <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface text-amber-500">
                             Score: {result.score.toFixed(4)}
                           </span>
                           {result.metadata?.page !== undefined && result.metadata?.page !== null && (
-                            <span className="page-badge">Page {Number(result.metadata.page) + 1}</span>
+                            <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface">Page {Number(result.metadata.page) + 1}</span>
                           )}
-                          {expandedResultIndex === idx ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          {expandedResultIndex === idx ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </div>
-                      </div>
+                      </button>
                       {expandedResultIndex === idx && (
-                        <div className="doc-item-body">
-                          <div className="metadata-viewer">
-                            <h4>Retrieved Metadata</h4>
-                            <pre>{JSON.stringify(result.metadata, null, 2)}</pre>
+                        <div className="p-3 border-t border-border-hairline bg-ink-surface flex flex-col gap-2 text-xs">
+                          <div>
+                            <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Retrieved Metadata</h4>
+                            <pre className="bg-[#0a0c10] border border-border-hairline p-2 font-mono text-[10px] text-slate-400 overflow-x-auto select-all rounded max-h-[120px]">
+                              {JSON.stringify(result.metadata, null, 2)}
+                            </pre>
                           </div>
-                          <div className="content-viewer">
-                            <h4>Chunk Body Content</h4>
-                            <p style={{ whiteSpace: 'pre-wrap' }}>{result.page_content}</p>
+                          <div>
+                            <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Chunk Body Content</h4>
+                            <div className="bg-[#0a0c10] border border-border-hairline p-2 text-xs text-slate-300 font-sans whitespace-pre-wrap rounded max-h-[150px] overflow-y-auto">
+                              {result.page_content}
+                            </div>
                           </div>
                         </div>
                       )}
