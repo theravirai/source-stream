@@ -12,17 +12,18 @@ The ingestion pipeline is built in step-by-step modular stages:
 1. **Document Loading**: Extracts raw text from plain text files (`.txt`), local PDF documents (`.pdf`), and documentation websites (recursive crawl restricting to same domain).
 2. **Text Chunking**: Segments documents into smaller, overlapping chunks using LangChain's `RecursiveCharacterTextSplitter` to fit LLM context limits and retain semantic meaning.
 3. **Embeddings & Indexing**: Generates Google Gemini embeddings (`models/gemini-embedding-001`) and indexes chunks in Qdrant Cloud, supporting similarity search.
-4. **RAG Core & Chat**: *[Planned]* Will retrieve relevant chunks and generate answers using Groq API with sources and citations.
+4. **RAG Core & Chat**: Retrieves relevant document chunks and synthesizes grounded answers using Groq API with inline citations and a detailed drawer.
 
 ---
 
 ## 💻 Tech Stack
 
 - **Backend**: FastAPI, LangChain (including `langchain-text-splitters`, `langchain-google-genai`, and `langchain-qdrant`), Groq API, Gemini Embeddings, Qdrant Vector DB, BeautifulSoup4, `lxml`, `pypdf`, `uv`
-- **Frontend**: Vite, React (JS), Lucide Icons, Vanilla CSS
+- **Frontend**: Vite, React (JS), Tailwind CSS v3, PostCSS, Lucide Icons
 - **Package Managers**: `uv` (Python), `npm` (Node)
 
 ---
+
 
 ## 🚀 Getting Started
 
@@ -76,7 +77,13 @@ For a detailed spec of endpoints, parameters, and models, refer to [api.md](file
 
 ### Vector Store
 - `POST /api/v1/vector-store/index` - Generate embeddings and index document chunks into Qdrant.
-- `POST /api/v1/vector-store/search` - Perform a similarity search query and return matching chunks with score.
+- `POST /api/v1/vector-store/search` - Perform a similarity search query and return matching chunks.
+- `GET /api/v1/vector-store/status` - Retrieve Qdrant collection status, size, and points counts.
+- `POST /api/v1/vector-store/clear` - Reset collection parameters (empty index).
+
+### Retriever
+- `POST /api/v1/retriever/query` - Context-grounded RAG query answering using Qdrant search and Groq synthesis.
+
 
 ---
 

@@ -63,7 +63,7 @@ graph TD
    - The client can also run semantic test queries against the `/api/v1/vector-store/search` endpoint to retrieve matching chunks with similarity scores.
 
  4. **Step 4: RAG Query & LLM Synthesis**
-   - The user interacts with the glassmorphic chat interface to ask natural language questions.
+   - The user interacts with the flat, developer-focused chat interface to ask natural language questions.
    - The client invokes `/api/v1/retriever/query`.
    - The backend retrieves relevant document chunks from Qdrant, dynamically injects similarity scores, and invokes the RAG chain composed using LangChain's LCEL Runnables.
    - The Groq API LLM synthesizes a grounded answer based on the provided context.

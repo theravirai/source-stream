@@ -25,7 +25,9 @@ source-stream/
 │   │   ├── components/      # Modular, reusable UI components
 │   │   ├── hooks/           # Custom React hooks (future)
 │   │   └── utils/           # Frontend client utility functions
-│   └── package.json         # Node.js dependencies and script configurations
+│   ├── package.json         # Node.js dependencies and script configurations
+│   ├── tailwind.config.js   # Tailwind CSS configuration file
+│   └── postcss.config.js    # PostCSS configuration file
 ├── .env.example             # Template for local environment variables
 ├── README.md                # General project overview and running instructions
 

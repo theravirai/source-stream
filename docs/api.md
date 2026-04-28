@@ -211,7 +211,38 @@ Performs similarity retrieval against the index based on a natural language quer
   ]
   ```
 
+### Get Vector Store Status
+
+Retrieves current statistics about the Qdrant collection, including active status, points count, and dimension parameters.
+
+* **URL:** `/api/v1/vector-store/status`
+* **Method:** `GET`
+* **Response Model:**
+  ```json
+  {
+    "collection_name": "source_stream",
+    "status": "green",
+    "chunks_count": 48,
+    "vector_size": 3072
+  }
+  ```
+
+### Clear Vector Store Collection
+
+Deletes the existing Qdrant collection and creates a fresh empty collection, resetting the pipeline.
+
+* **URL:** `/api/v1/vector-store/clear`
+* **Method:** `POST`
+* **Response Model:**
+  ```json
+  {
+    "status": "success",
+    "message": "Collection 'source_stream' successfully cleared and recreated."
+  }
+  ```
+
 ---
+
 
 ## 5. Retriever Endpoints
 
