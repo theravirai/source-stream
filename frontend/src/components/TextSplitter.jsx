@@ -150,7 +150,7 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
 
               <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
                 {chunks.map((chunk, idx) => (
-                  <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden" key={idx}>
+                  <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden shrink-0" key={idx}>
                     <button 
                       className="flex justify-between items-center w-full px-3 py-2 hover:bg-ink-hover transition-colors text-left"
                       onClick={() => toggleExpandChunk(idx)}

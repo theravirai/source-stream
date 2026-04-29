@@ -100,6 +100,7 @@ function DocumentLoader({ onDocumentsLoaded }) {
 
       const docs = await response.json()
       setResults(docs)
+      setExpandedDocIndex(0)
       if (onDocumentsLoaded) {
         onDocumentsLoaded(docs)
       }
@@ -291,7 +292,7 @@ function DocumentLoader({ onDocumentsLoaded }) {
 
             <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
               {results.map((doc, idx) => (
-                <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden" key={idx}>
+                <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden shrink-0" key={idx}>
                   <button 
                     className="flex justify-between items-center w-full px-3 py-2 hover:bg-ink-hover transition-colors text-left"
                     onClick={() => toggleExpandDoc(idx)}
