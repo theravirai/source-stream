@@ -199,6 +199,7 @@ function App() {
                   setSplitChunks(chunks)
                   setIsIndexed(false)
                 }}
+                onNavigate={(step) => setActiveStep(step)}
               />
             )}
 
@@ -212,32 +213,18 @@ function App() {
                     .then(res => res.json())
                     .then(data => setQdrantStats({ chunks_count: data.chunks_count, status: data.status }))
                     .catch(err => console.error(err))
-                }} 
+                }}
+                onNavigate={(step) => setActiveStep(step)}
               />
             )}
 
             {activeStep === 3 && (
-              <ChatInterface />
+              <ChatInterface 
+                isIndexed={isIndexed}
+                onNavigate={(step) => setActiveStep(step)}
+              />
             )}
           </div>
-
-          {/* Helper alert when previous stages are missing */}
-          {activeStep > 0 && !isIndexed && (
-            <div className="border-t border-slate-200 dark:border-border-hairline mt-6 pt-4 flex items-start gap-2.5 text-xs font-mono text-slate-500 dark:text-slate-400 transition-colors duration-200">
-              <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                {activeStep === 1 && !loadedDocuments && (
-                  <p>Incomplete stage. Go to <button className="text-accent underline hover:text-accent-hover" onClick={() => setActiveStep(0)}>Document Loader</button> to load context files before splitting.</p>
-                )}
-                {activeStep === 2 && !splitChunks && (
-                  <p>Incomplete stage. Go to <button className="text-accent underline hover:text-accent-hover" onClick={() => setActiveStep(1)}>Text Splitter</button> to chunk documents before indexing to Qdrant.</p>
-                )}
-                {activeStep === 3 && !isIndexed && (
-                  <p>Incomplete stage. Go to <button className="text-accent underline hover:text-accent-hover" onClick={() => setActiveStep(2)}>Vector Store</button> to index document chunks before initiating queries.</p>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </main>
 

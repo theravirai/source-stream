@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info } from 'lucide-react'
+import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock } from 'lucide-react'
 
-function ChatInterface() {
+function ChatInterface({ isIndexed, onNavigate }) {
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
@@ -119,8 +119,26 @@ function ChatInterface() {
   return (
     <div className="flex flex-col md:flex-row gap-4 font-sans text-sm relative min-h-[480px]">
       
-      {/* Main Chat Area */}
-      <div className="flex-grow flex flex-col justify-between border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg p-4 rounded min-h-[420px] max-h-[500px] transition-colors duration-200">
+      {!isIndexed ? (
+        <div className="flex-grow border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-12 flex flex-col items-center justify-center text-center rounded gap-4 transition-colors duration-200 min-h-[420px]">
+          <div className="bg-slate-200 dark:bg-[#0a0c10] border border-slate-300 dark:border-border-hairline p-3 rounded-full">
+            <Lock size={28} className="text-slate-500 dark:text-slate-400" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono uppercase tracking-wider mb-1">Stage Locked</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Please index document chunks into the Vector Store before initiating queries.</p>
+          </div>
+          <button 
+            onClick={() => onNavigate && onNavigate(2)}
+            className="mt-2 bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
+          >
+            Go to Vector Store
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Main Chat Area */}
+          <div className="flex-grow flex flex-col justify-between border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg p-4 rounded min-h-[420px] max-h-[500px] transition-colors duration-200">
         {/* Messages List */}
         <div className="flex-grow overflow-y-auto pr-1 flex flex-col gap-3.5 mb-4 max-h-[380px]">
           {messages.map((msg) => (
@@ -288,6 +306,8 @@ function ChatInterface() {
             })}
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   )

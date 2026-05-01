@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
 
-function VectorStore({ chunks, onIndexingComplete }) {
+function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [indexingComplete, setIndexingComplete] = useState(false)
@@ -91,12 +91,20 @@ function VectorStore({ chunks, onIndexingComplete }) {
       </p>
 
       {!chunks || chunks.length === 0 ? (
-        <div className="border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-8 flex flex-col items-center justify-center text-center text-slate-500 rounded gap-2.5 transition-colors duration-200">
-          <Database size={36} className="text-slate-400 dark:text-slate-600" />
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Vector index queue empty</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">Please split your loaded documents into chunks to enable vector store indexing.</p>
+        <div className="border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-12 flex flex-col items-center justify-center text-center rounded gap-4 transition-colors duration-200">
+          <div className="bg-slate-200 dark:bg-[#0a0c10] border border-slate-300 dark:border-border-hairline p-3 rounded-full">
+            <Lock size={28} className="text-slate-500 dark:text-slate-400" />
           </div>
+          <div>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono uppercase tracking-wider mb-1">Stage Locked</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Please split your loaded documents into chunks to enable vector store indexing.</p>
+          </div>
+          <button 
+            onClick={() => onNavigate && onNavigate(1)}
+            className="mt-2 bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
+          >
+            Go to Text Splitter
+          </button>
         </div>
       ) : (
         <div className="flex flex-col gap-5">

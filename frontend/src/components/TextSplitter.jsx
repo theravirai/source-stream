@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { Layers, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react'
+import React, { useState } from 'react'
+import { Layers, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Lock } from 'lucide-react'
 
-function TextSplitter({ documents, onChunksGenerated, chunks }) {
+function TextSplitter({ documents, onChunksGenerated, chunks, onNavigate }) {
   const [chunkSize, setChunkSize] = useState(1000)
   const [chunkOverlap, setChunkOverlap] = useState(200)
   const [loading, setLoading] = useState(false)
@@ -55,12 +55,20 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
       </p>
 
       {!documents || documents.length === 0 ? (
-        <div className="border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-8 flex flex-col items-center justify-center text-center text-slate-500 rounded gap-2.5 transition-colors duration-200">
-          <Layers size={36} className="text-slate-400 dark:text-slate-600" />
-          <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Ingestion buffer empty</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">Please load a knowledge source first to enable text chunking configurations.</p>
+        <div className="border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-12 flex flex-col items-center justify-center text-center rounded gap-4 transition-colors duration-200">
+          <div className="bg-slate-200 dark:bg-[#0a0c10] border border-slate-300 dark:border-border-hairline p-3 rounded-full">
+            <Lock size={28} className="text-slate-500 dark:text-slate-400" />
           </div>
+          <div>
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono uppercase tracking-wider mb-1">Stage Locked</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Please load a knowledge source first to enable text chunking configurations.</p>
+          </div>
+          <button 
+            onClick={() => onNavigate && onNavigate(0)}
+            className="mt-2 bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
+          >
+            Go to Document Loader
+          </button>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
