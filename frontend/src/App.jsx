@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Server, RotateCcw, AlertTriangle } from 'lucide-react'
+import { Server, RotateCcw, AlertTriangle, Sun, Moon } from 'lucide-react'
 import PipelineRail from './components/PipelineRail'
 import DocumentLoader from './components/DocumentLoader'
 import TextSplitter from './components/TextSplitter'
@@ -11,6 +11,20 @@ function App() {
   const [status, setStatus] = useState('checking')
   const [serverInfo, setServerInfo] = useState(null)
   
+  // Theme State
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme)
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [theme])
+
   // Pipeline Data States
   const [loadedDocuments, setLoadedDocuments] = useState(null)
   const [splitChunks, setSplitChunks] = useState(null)
@@ -116,31 +130,39 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-ink-bg text-slate-50 font-sans flex flex-col antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-ink-bg text-slate-900 dark:text-slate-50 font-sans flex flex-col antialiased transition-colors duration-200">
       {/* Top Header */}
-      <header className="border-b border-border-hairline bg-ink-surface px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+      <header className="border-b border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-surface px-6 py-4 flex flex-wrap justify-between items-center gap-4 transition-colors duration-200">
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-accent tracking-tight text-lg">SOURCE STREAM</span>
-            <span className="text-[10px] font-mono border border-border-hairline px-1.5 py-0.5 rounded text-slate-400">RAG DEVTOOL</span>
+            <span className="text-[10px] font-mono border border-slate-200 dark:border-border-hairline px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400">RAG DEVTOOL</span>
           </div>
-          <p className="text-xs text-slate-400 mt-1 font-mono">Precision retrieval-augmented generation engine validation workspace.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">Precision retrieval-augmented generation engine validation workspace.</p>
         </div>
 
         {/* Health status badge & Quick controls */}
         <div className="flex items-center gap-4">
           <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-1.5 rounded transition-colors duration-200"
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
+          <button
             onClick={handleResetPipeline}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-400 border border-border-hairline hover:border-red-900/50 bg-ink-bg px-2.5 py-1.5 rounded transition-all font-mono"
+            className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-border-hairline hover:border-red-500/50 dark:hover:border-red-900/50 bg-slate-50 dark:bg-ink-bg px-2.5 py-1.5 rounded transition-all font-mono duration-200"
             title="Wipe database and reset pipeline"
           >
             <RotateCcw size={12} />
             <span>Reset knowledge base</span>
           </button>
           
-          <div className="flex items-center gap-2 border border-border-hairline bg-ink-bg px-2.5 py-1.5 rounded text-xs font-mono">
+          <div className="flex items-center gap-2 border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg px-2.5 py-1.5 rounded text-xs font-mono transition-colors duration-200">
             <Server size={12} className={status === 'online' ? 'text-emerald-500' : 'text-red-500'} />
-            <span className="text-slate-400">API:</span>
+            <span className="text-slate-500 dark:text-slate-400">API:</span>
             <span className={status === 'online' ? 'text-emerald-500' : 'text-red-500'}>
               {status === 'online' ? 'online' : status === 'offline' ? 'offline' : 'checking'}
             </span>
@@ -155,7 +177,7 @@ function App() {
         <PipelineRail activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} />
 
         {/* Active Stage Panel */}
-        <div className="border border-border-hairline bg-ink-surface p-4 md:p-6 flex-grow flex flex-col justify-between">
+        <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-surface p-4 md:p-6 flex-grow flex flex-col justify-between transition-colors duration-200 rounded-md">
           
           {/* Active View Container */}
           <div className="flex-grow">
@@ -201,7 +223,7 @@ function App() {
 
           {/* Helper alert when previous stages are missing */}
           {activeStep > 0 && !isIndexed && (
-            <div className="border-t border-border-hairline mt-6 pt-4 flex items-start gap-2.5 text-xs font-mono text-slate-400">
+            <div className="border-t border-slate-200 dark:border-border-hairline mt-6 pt-4 flex items-start gap-2.5 text-xs font-mono text-slate-500 dark:text-slate-400 transition-colors duration-200">
               <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
               <div>
                 {activeStep === 1 && !loadedDocuments && (
@@ -220,7 +242,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border-hairline bg-ink-surface px-6 py-4 flex flex-wrap justify-between items-center text-xs font-mono text-slate-500">
+      <footer className="border-t border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-surface px-6 py-4 flex flex-wrap justify-between items-center text-xs font-mono text-slate-500 dark:text-slate-400 transition-colors duration-200">
         <div>&copy; 2026 Source Stream. All systems operational.</div>
         <div className="flex gap-4">
           <span>Qdrant Collection: {qdrantStats.collection_name || 'source_stream'}</span>

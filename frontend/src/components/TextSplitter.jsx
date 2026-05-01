@@ -60,39 +60,39 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
       </p>
 
       {!documents || documents.length === 0 ? (
-        <div className="border border-border-hairline bg-ink-bg p-8 flex flex-col items-center justify-center text-center text-slate-500 rounded gap-2.5">
-          <Layers size={36} className="text-slate-600" />
+        <div className="border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-8 flex flex-col items-center justify-center text-center text-slate-500 rounded gap-2.5 transition-colors duration-200">
+          <Layers size={36} className="text-slate-400 dark:text-slate-600" />
           <div>
-            <p className="text-xs text-slate-400 font-mono">Ingestion buffer empty</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Ingestion buffer empty</p>
             <p className="text-[10px] text-slate-500 mt-0.5">Please load a knowledge source first to enable text chunking configurations.</p>
           </div>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 bg-ink-bg border border-border-hairline p-4 rounded">
+          <div className="flex flex-col gap-4 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
             {/* Chunk Size */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between items-center text-xs">
-                <label htmlFor="size-input" className="font-semibold text-slate-300">Chunk size (characters)</label>
-                <span className="font-mono text-accent">{chunkSize}</span>
+            <div className="flex flex-col gap-3.5">
+              <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Chunk Size</label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="size-input"
+                  type="range"
+                  min="100"
+                  max="2000"
+                  step="100"
+                  value={chunkSize}
+                  onChange={(e) => setChunkSize(parseInt(e.target.value))}
+                  className="flex-grow h-1 bg-slate-200 dark:bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-slate-300 dark:border-border-hairline"
+                />
+                <span className="text-xs font-mono w-12 text-right text-slate-500 dark:text-slate-400">{chunkSize}</span>
               </div>
-              <input
-                id="size-input"
-                type="range"
-                min="100"
-                max="3000"
-                step="50"
-                value={chunkSize}
-                onChange={(e) => setChunkSize(parseInt(e.target.value))}
-                className="w-full h-1 bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-border-hairline"
-              />
               <span className="text-[10px] font-mono text-slate-500">The maximum character count per text segment.</span>
             </div>
 
             {/* Chunk Overlap */}
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-center text-xs">
-                <label htmlFor="overlap-input" className="font-semibold text-slate-300">Chunk overlap (characters)</label>
+                <label htmlFor="overlap-input" className="font-semibold text-slate-600 dark:text-slate-300">Chunk overlap (characters)</label>
                 <span className="font-mono text-accent">{chunkOverlap}</span>
               </div>
               <input
@@ -103,14 +103,14 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
                 step="10"
                 value={chunkOverlap}
                 onChange={(e) => setChunkOverlap(parseInt(e.target.value))}
-                className="w-full h-1 bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-border-hairline"
+                className="w-full h-1 bg-slate-200 dark:bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-slate-300 dark:border-border-hairline"
               />
               <span className="text-[10px] font-mono text-slate-500">Overlap size to maintain context between adjacent chunks.</span>
             </div>
           </div>
 
           {error && (
-            <div className="border border-red-900/50 bg-red-950/20 text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+            <div className="border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
               <AlertCircle size={16} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -132,32 +132,32 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
           </button>
 
           {chunks && chunks.length > 0 && (
-            <div className="border border-border-hairline bg-ink-bg rounded p-4 flex flex-col gap-4 mt-2">
-              <div className="flex flex-wrap justify-between items-center border-b border-border-hairline pb-3 gap-2">
+            <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg rounded p-4 flex flex-col gap-4 mt-2 transition-colors duration-200">
+              <div className="flex flex-wrap justify-between items-center border-b border-slate-200 dark:border-border-hairline pb-3 gap-2">
                 <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-mono font-semibold">
                   <CheckCircle2 size={16} />
                   <span>Splitting complete</span>
                 </div>
-                <div className="flex gap-2 text-[10px] font-mono text-slate-400">
-                  <span className="border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
-                    <strong className="text-slate-200">{chunks.length}</strong> chunks
+                <div className="flex gap-2 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                  <span className="border border-slate-200 dark:border-border-hairline px-2 py-0.5 rounded bg-slate-50 dark:bg-ink-hover">
+                    <strong className="text-slate-800 dark:text-slate-200">{chunks.length}</strong> chunks
                   </span>
-                  <span className="border border-border-hairline px-2 py-0.5 rounded bg-ink-hover">
-                    <strong className="text-slate-200">{averageChunkLength}</strong> avg chars
+                  <span className="border border-slate-200 dark:border-border-hairline px-2 py-0.5 rounded bg-slate-50 dark:bg-ink-hover">
+                    <strong className="text-slate-800 dark:text-slate-200">{averageChunkLength}</strong> avg chars
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
                 {chunks.map((chunk, idx) => (
-                  <div className="border border-border-hairline bg-[#0a0c10] rounded overflow-hidden shrink-0" key={idx}>
+                  <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-[#0a0c10] rounded overflow-hidden shrink-0" key={idx}>
                     <button 
-                      className="flex justify-between items-center w-full px-3 py-2 hover:bg-ink-hover transition-colors text-left"
+                      className="flex justify-between items-center w-full px-3 py-2 hover:bg-slate-100 dark:hover:bg-ink-hover transition-colors text-left"
                       onClick={() => toggleExpandChunk(idx)}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-[10px] font-mono border border-border-hairline px-1 rounded text-slate-400 bg-ink-surface">#{idx + 1}</span>
-                        <p className="text-xs text-slate-300 font-mono truncate">
+                        <span className="text-[10px] font-mono border border-slate-200 dark:border-border-hairline px-1 rounded text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-ink-surface">#{idx + 1}</span>
+                        <p className="text-xs text-slate-700 dark:text-slate-300 font-mono truncate">
                           {(() => {
                             const source = chunk.metadata?.source;
                             if (!source || typeof source !== 'string') return 'chunk';
@@ -165,27 +165,27 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
                           })()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
-                        <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface text-emerald-500">
+                      <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-500 dark:text-slate-400">
+                        <span className="border border-slate-200 dark:border-border-hairline px-1.5 py-0.5 rounded bg-white dark:bg-ink-surface text-emerald-600 dark:text-emerald-500">
                           {chunk.page_content.length} chars
                         </span>
                         {chunk.metadata?.page !== undefined && chunk.metadata?.page !== null && (
-                          <span className="border border-border-hairline px-1.5 py-0.5 rounded bg-ink-surface">Page {Number(chunk.metadata.page) + 1}</span>
+                          <span className="border border-slate-200 dark:border-border-hairline px-1.5 py-0.5 rounded bg-white dark:bg-ink-surface">Page {Number(chunk.metadata.page) + 1}</span>
                         )}
                         {expandedChunkIndex === idx ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </div>
                     </button>
                     {expandedChunkIndex === idx && (
-                      <div className="p-3 border-t border-border-hairline bg-ink-surface flex flex-col gap-2 text-xs">
+                      <div className="p-3 border-t border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-surface flex flex-col gap-2 text-xs transition-colors duration-200">
                         <div>
                           <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Chunk Metadata</h4>
-                          <pre className="bg-[#0a0c10] border border-border-hairline p-2 font-mono text-[10px] text-slate-400 overflow-auto select-all rounded max-h-[120px]">
+                          <pre className="bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline p-2 font-mono text-[10px] text-slate-600 dark:text-slate-400 overflow-auto select-all rounded max-h-[120px]">
                             {JSON.stringify(chunk.metadata, null, 2)}
                           </pre>
                         </div>
                         <div>
                           <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 mb-1">Segment Content</h4>
-                          <div className="bg-[#0a0c10] border border-border-hairline p-2 text-xs text-slate-300 font-sans whitespace-pre-wrap rounded max-h-[150px] overflow-y-auto">
+                          <div className="bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline p-2 text-xs text-slate-700 dark:text-slate-300 font-sans whitespace-pre-wrap rounded max-h-[150px] overflow-y-auto">
                             {chunk.page_content}
                           </div>
                         </div>
