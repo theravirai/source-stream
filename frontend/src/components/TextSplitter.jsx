@@ -8,13 +8,6 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
   const [error, setError] = useState(null)
   const [expandedChunkIndex, setExpandedChunkIndex] = useState(null)
 
-  // Automatically ensure overlap is less than size if size changes
-  useEffect(() => {
-    if (chunkOverlap >= chunkSize) {
-      setChunkOverlap(Math.max(0, chunkSize - 50))
-    }
-  }, [chunkSize, chunkOverlap])
-
   const handleSplit = async () => {
     if (!documents || documents.length === 0) return
     setError(null)
@@ -52,6 +45,8 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
   const averageChunkLength = chunks && chunks.length > 0
     ? Math.round(chunks.reduce((sum, c) => sum + c.page_content.length, 0) / chunks.length)
     : 0
+
+  const isInvalidOverlap = chunkOverlap >= chunkSize
 
   return (
     <div className="flex flex-col gap-4 font-sans text-sm">
@@ -99,13 +94,19 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
                 id="overlap-input"
                 type="range"
                 min="0"
-                max={Math.max(0, chunkSize - 50)}
+                max="500"
                 step="10"
                 value={chunkOverlap}
                 onChange={(e) => setChunkOverlap(parseInt(e.target.value))}
                 className="w-full h-1 bg-slate-200 dark:bg-[#0a0c10] rounded-lg appearance-none cursor-pointer accent-accent border border-slate-300 dark:border-border-hairline"
               />
-              <span className="text-[10px] font-mono text-slate-500">Overlap size to maintain context between adjacent chunks.</span>
+              {isInvalidOverlap ? (
+                <span className="text-[10px] font-mono text-red-600 dark:text-red-400 flex items-center gap-1 mt-0.5">
+                  <AlertCircle size={10} /> Chunk overlap must be strictly less than chunk size.
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-slate-500 mt-0.5">Overlap size to maintain context between adjacent chunks.</span>
+              )}
             </div>
           </div>
 
@@ -118,7 +119,7 @@ function TextSplitter({ documents, onChunksGenerated, chunks }) {
 
           <button
             className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
-            disabled={loading}
+            disabled={loading || isInvalidOverlap}
             onClick={handleSplit}
           >
             {loading ? (
