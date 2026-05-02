@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
+import { getSessionId } from '../utils/session'
 
 function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
@@ -25,7 +26,10 @@ function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
     try {
       const response = await fetch('/api/v1/vector-store/index', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Session-Id': getSessionId()
+        },
         body: JSON.stringify({ documents: chunks }),
       })
 
@@ -59,7 +63,10 @@ function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
     try {
       const response = await fetch('/api/v1/vector-store/search', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Session-Id': getSessionId()
+        },
         body: JSON.stringify({
           query: searchQuery,
           k: searchK,

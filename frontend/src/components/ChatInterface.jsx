@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock } from 'lucide-react'
+import { getSessionId } from '../utils/session'
 
 function ChatInterface({ isIndexed, onNavigate }) {
   const [messages, setMessages] = useState([
@@ -54,6 +55,7 @@ function ChatInterface({ isIndexed, onNavigate }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Session-Id': getSessionId()
         },
         body: JSON.stringify({
           query: userMessageText,
