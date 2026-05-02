@@ -11,15 +11,15 @@ logger = logging.getLogger(__name__)
 
 class RAGChainService:
     @classmethod
-    def query(cls, query: str, k: int = 4) -> Dict[str, Any]:
+    def query(cls, session_id: str, query: str, k: int = 4) -> Dict[str, Any]:
         """
         Retrieves relevant documents from Qdrant and generates a grounded response using Groq.
         Uses LangChain Expression Language (LCEL) Runnables.
         """
-        logger.info(f"Executing RAG query: '{query}' with k={k}")
+        logger.info(f"Executing RAG query: '{query}' with k={k} for session '{session_id}'")
         
         # 1. Get vector store and initialize the retriever
-        vector_store = VectorStoreService.get_vector_store()
+        vector_store = VectorStoreService.get_vector_store(session_id)
         retriever = vector_store.as_retriever(
             search_type="similarity",
             search_kwargs={"k": k}
@@ -68,7 +68,7 @@ class RAGChainService:
         })
         
         # 6. Retrieve relevant documents with similarity scores from Vector Store
-        raw_results = VectorStoreService.similarity_search(query=query, k=k)
+        raw_results = VectorStoreService.similarity_search(session_id=session_id, query=query, k=k)
         retrieved_docs = []
         for doc, score in raw_results:
             # Inject similarity score into document metadata

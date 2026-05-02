@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class VectorStoreService:
     @staticmethod
-    def get_vector_store() -> QdrantVectorStore:
+    def get_vector_store(session_id: str) -> QdrantVectorStore:
         """
         Initialize Qdrant client, ensure collection exists, and return QdrantVectorStore.
         """
@@ -24,7 +24,7 @@ class VectorStoreService:
             api_key=settings.QDRANT_API_KEY
         )
         
-        collection_name = settings.QDRANT_COLLECTION or "source_stream"
+        collection_name = f"source_stream_session_{session_id}"
         
         embeddings = get_embeddings_service()
 
@@ -77,28 +77,28 @@ class VectorStoreService:
         )
 
     @classmethod
-    def index_documents(cls, documents: list[Document]) -> int:
+    def index_documents(cls, session_id: str, documents: list[Document]) -> int:
         """
         Add documents to Qdrant collection.
         """
-        logger.info(f"Indexing {len(documents)} documents into Qdrant collection.")
-        vector_store = cls.get_vector_store()
+        logger.info(f"Indexing {len(documents)} documents into Qdrant collection for session '{session_id}'.")
+        vector_store = cls.get_vector_store(session_id)
         vector_store.add_documents(documents)
         return len(documents)
 
     @classmethod
-    def similarity_search(cls, query: str, k: int = 4) -> list[tuple[Document, float]]:
+    def similarity_search(cls, session_id: str, query: str, k: int = 4) -> list[tuple[Document, float]]:
         """
         Search for top k documents matching the query.
         Returns list of (Document, score) tuples.
         """
-        logger.info(f"Searching Qdrant collection for query: '{query}' (k={k})")
-        vector_store = cls.get_vector_store()
+        logger.info(f"Searching Qdrant collection for session '{session_id}' query: '{query}' (k={k})")
+        vector_store = cls.get_vector_store(session_id)
         results = vector_store.similarity_search_with_score(query=query, k=k)
         return results
 
     @classmethod
-    def get_status(cls) -> dict:
+    def get_status(cls, session_id: str) -> dict:
         """
         Retrieve current Qdrant collection statistics.
         """
@@ -110,7 +110,7 @@ class VectorStoreService:
             url=settings.QDRANT_URL,
             api_key=settings.QDRANT_API_KEY
         )
-        collection_name = settings.QDRANT_COLLECTION or "source_stream"
+        collection_name = f"source_stream_session_{session_id}"
         
         try:
             coll_info = client.get_collection(collection_name=collection_name)
@@ -140,7 +140,7 @@ class VectorStoreService:
             }
 
     @classmethod
-    def clear_collection(cls) -> str:
+    def clear_collection(cls, session_id: str) -> str:
         """
         Drop and recreate the Qdrant collection to reset indexing.
         """
@@ -152,7 +152,7 @@ class VectorStoreService:
             url=settings.QDRANT_URL,
             api_key=settings.QDRANT_API_KEY
         )
-        collection_name = settings.QDRANT_COLLECTION or "source_stream"
+        collection_name = f"source_stream_session_{session_id}"
         
         embeddings = get_embeddings_service()
         try:
