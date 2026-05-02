@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from app.models.retriever import QueryRequest, QueryResponse, SourceDocument
 from app.services.rag_chain import RAGChainService
 import logging
@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/query", response_model=QueryResponse)
-async def query_rag(request: QueryRequest) -> QueryResponse:
+async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> QueryResponse:
     """
     RAG query endpoint: retrieves documents, invokes the Groq LLM model
     via the LCEL chain, and returns a synthesized answer with source citations.
@@ -19,7 +19,7 @@ async def query_rag(request: QueryRequest) -> QueryResponse:
         )
     
     try:
-        result = RAGChainService.query(query=request.query, k=request.k)
+        result = RAGChainService.query(session_id=x_session_id, query=request.query, k=request.k)
         
         # Convert raw retrieved Document objects to SourceDocument response model
         source_docs = [

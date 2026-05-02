@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from langchain_core.documents import Document as LCDocument
 from app.models.vector_store import IndexRequest, IndexResponse, SearchRequest, SearchResultResponse, VectorStoreStatusResponse, VectorStoreClearResponse
 from app.services.vectorstore import VectorStoreService
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/index", response_model=IndexResponse)
-async def index_documents(request: IndexRequest):
+async def index_documents(request: IndexRequest, x_session_id: str = Header(...)):
     """
     Generate embeddings and index the provided document chunks into Qdrant.
     """
@@ -21,8 +21,8 @@ async def index_documents(request: IndexRequest):
             for doc in request.documents
         ]
         
-        indexed_count = VectorStoreService.index_documents(lc_docs)
-        collection_name = settings.QDRANT_COLLECTION or "source_stream"
+        indexed_count = VectorStoreService.index_documents(session_id=x_session_id, documents=lc_docs)
+        collection_name = f"source_stream_session_{x_session_id}"
         
         logger.info(f"Successfully indexed {indexed_count} chunks.")
         return IndexResponse(
@@ -39,13 +39,13 @@ async def index_documents(request: IndexRequest):
         raise HTTPException(status_code=500, detail=f"Failed to index documents: {str(e)}")
 
 @router.post("/search", response_model=list[SearchResultResponse])
-async def search_documents(request: SearchRequest):
+async def search_documents(request: SearchRequest, x_session_id: str = Header(...)):
     """
     Perform a similarity search against the Qdrant vector store.
     """
     logger.info(f"Received request to search vector store with query='{request.query}' and k={request.k}")
     try:
-        results = VectorStoreService.similarity_search(query=request.query, k=request.k)
+        results = VectorStoreService.similarity_search(session_id=x_session_id, query=request.query, k=request.k)
         
         response_data = [
             SearchResultResponse(
@@ -65,13 +65,13 @@ async def search_documents(request: SearchRequest):
         raise HTTPException(status_code=500, detail=f"Failed to search documents: {str(e)}")
 
 @router.get("/status", response_model=VectorStoreStatusResponse)
-async def get_vector_store_status():
+async def get_vector_store_status(x_session_id: str = Header(...)):
     """
     Retrieve active Qdrant database status, chunk counts, and collection name.
     """
     logger.info("Received request for vector store status.")
     try:
-        status_info = VectorStoreService.get_status()
+        status_info = VectorStoreService.get_status(session_id=x_session_id)
         return VectorStoreStatusResponse(**status_info)
     except ValueError as val_err:
         logger.error(f"Configuration error checking status: {str(val_err)}")
@@ -81,13 +81,13 @@ async def get_vector_store_status():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/clear", response_model=VectorStoreClearResponse)
-async def clear_vector_store():
+async def clear_vector_store(x_session_id: str = Header(...)):
     """
     Clear/reset the vector store collection by deleting and recreating it.
     """
     logger.info("Received request to clear vector store collection.")
     try:
-        collection = VectorStoreService.clear_collection()
+        collection = VectorStoreService.clear_collection(session_id=x_session_id)
         return VectorStoreClearResponse(
             status="success",
             message=f"Collection '{collection}' successfully cleared and recreated."
