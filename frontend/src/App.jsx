@@ -5,8 +5,10 @@ import DocumentLoader from './components/DocumentLoader'
 import TextSplitter from './components/TextSplitter'
 import VectorStore from './components/VectorStore'
 import ChatInterface from './components/ChatInterface'
+import { getSessionId } from './utils/session'
 
 function App() {
+  const sessionId = getSessionId()
   const [activeStep, setActiveStep] = useState(0)
   const [status, setStatus] = useState('checking')
   const [serverInfo, setServerInfo] = useState(null)
@@ -51,7 +53,9 @@ function App() {
 
     const checkVectorStoreStatus = async () => {
       try {
-        const response = await fetch('/api/v1/vector-store/status')
+        const response = await fetch('/api/v1/vector-store/status', {
+          headers: { 'X-Session-Id': sessionId }
+        })
         if (response.ok) {
           const data = await response.json()
           setQdrantStats({
@@ -113,7 +117,8 @@ function App() {
 
     try {
       const response = await fetch('/api/v1/vector-store/clear', {
-        method: 'POST'
+        method: 'POST',
+        headers: { 'X-Session-Id': sessionId }
       })
       if (response.ok) {
         setLoadedDocuments(null)
@@ -209,7 +214,9 @@ function App() {
                 onIndexingComplete={(complete) => {
                   setIsIndexed(complete)
                   // Refresh Qdrant stats
-                  fetch('/api/v1/vector-store/status')
+                  fetch('/api/v1/vector-store/status', {
+                    headers: { 'X-Session-Id': sessionId }
+                  })
                     .then(res => res.json())
                     .then(data => setQdrantStats({ chunks_count: data.chunks_count, status: data.status }))
                     .catch(err => console.error(err))
