@@ -31,6 +31,7 @@ function App() {
   const [loadedDocuments, setLoadedDocuments] = useState(null)
   const [splitChunks, setSplitChunks] = useState(null)
   const [isIndexed, setIsIndexed] = useState(false)
+  const [vectorSearchState, setVectorSearchState] = useState(null)
   const [qdrantStats, setQdrantStats] = useState({ chunks_count: 0, status: 'unknown' })
   const [isLoadingStatus, setIsLoadingStatus] = useState(true)
 
@@ -192,6 +193,7 @@ function App() {
                   setLoadedDocuments(docs)
                   setSplitChunks(null)
                   setIsIndexed(false)
+                  setVectorSearchState(null)
                 }} 
               />
             )}
@@ -203,6 +205,7 @@ function App() {
                 onChunksGenerated={(chunks) => {
                   setSplitChunks(chunks)
                   setIsIndexed(false)
+                  setVectorSearchState(null)
                 }}
                 onNavigate={(step) => setActiveStep(step)}
               />
@@ -212,8 +215,11 @@ function App() {
               <VectorStore 
                 chunks={splitChunks} 
                 isIndexed={isIndexed}
+                vectorSearchState={vectorSearchState}
+                setVectorSearchState={setVectorSearchState}
                 onIndexingComplete={(complete) => {
                   setIsIndexed(complete)
+                  setVectorSearchState(null)
                   // Refresh Qdrant stats
                   fetch('/api/v1/vector-store/status', {
                     headers: { 'X-Session-Id': sessionId }

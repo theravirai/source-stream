@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
-function VectorStore({ chunks, isIndexed, onIndexingComplete, onNavigate }) {
+function VectorStore({ chunks, isIndexed, vectorSearchState, setVectorSearchState, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [indexingComplete, setIndexingComplete] = useState(isIndexed || false)
@@ -10,12 +10,25 @@ function VectorStore({ chunks, isIndexed, onIndexingComplete, onNavigate }) {
   const [collectionName, setCollectionName] = useState(null)
 
   // Search states
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchK, setSearchK] = useState(4)
+  const [searchQuery, setSearchQuery] = useState(vectorSearchState?.searchQuery || '')
+  const [searchK, setSearchK] = useState(vectorSearchState?.searchK || 4)
   const [searching, setSearching] = useState(false)
   const [searchError, setSearchError] = useState(null)
-  const [searchResults, setSearchResults] = useState(null)
-  const [expandedResultIndex, setExpandedResultIndex] = useState(null)
+  const [searchResults, setSearchResults] = useState(vectorSearchState?.searchResults || null)
+  const [expandedResultIndex, setExpandedResultIndex] = useState(vectorSearchState?.expandedResultIndex || null)
+
+  const stateRef = useRef({ searchQuery, searchK, searchResults, expandedResultIndex })
+  useEffect(() => {
+    stateRef.current = { searchQuery, searchK, searchResults, expandedResultIndex }
+  }, [searchQuery, searchK, searchResults, expandedResultIndex])
+
+  useEffect(() => {
+    return () => {
+      if (setVectorSearchState) {
+        setVectorSearchState(stateRef.current)
+      }
+    }
+  }, [setVectorSearchState])
 
   const handleIndex = async () => {
     if (!chunks || chunks.length === 0) return
