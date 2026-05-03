@@ -167,7 +167,33 @@ function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
               <span>Test similarity retrieval</span>
             </h3>
 
-            <form onSubmit={handleSearch} className="flex flex-col gap-3.5 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
+            {!indexingComplete ? (
+              <div className="border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-ink-bg p-8 flex flex-col items-center justify-center text-center rounded gap-4 transition-colors duration-200">
+                <div className="bg-slate-200 dark:bg-[#0a0c10] border border-slate-300 dark:border-border-hairline p-3 rounded-full">
+                  <Lock size={24} className="text-slate-500 dark:text-slate-400" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono uppercase tracking-wider mb-1">Step 3 Required</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Generate embeddings and index your document chunks before performing semantic search.</p>
+                </div>
+                <button 
+                  onClick={handleIndex}
+                  disabled={loading}
+                  className="mt-2 bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader size={14} className="animate-spin text-white" />
+                      <span>Indexing vectors...</span>
+                    </>
+                  ) : (
+                    <span>Index chunks</span>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <>
+                <form onSubmit={handleSearch} className="flex flex-col gap-3.5 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
               <div className="flex gap-4 flex-wrap">
                 <div className="flex-grow min-w-[200px] flex flex-col gap-1.5">
                   <label htmlFor="search-input" className="text-xs font-semibold text-slate-600 dark:text-slate-300">Search query</label>
@@ -280,6 +306,8 @@ function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
                   ))}
                 </div>
               </div>
+                )}
+              </>
             )}
           </div>
         </div>
