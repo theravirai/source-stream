@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
-function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
+function VectorStore({ chunks, isIndexed, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [indexingComplete, setIndexingComplete] = useState(false)
+  const [indexingComplete, setIndexingComplete] = useState(isIndexed || false)
   const [indexedCount, setIndexedCount] = useState(null)
   const [collectionName, setCollectionName] = useState(null)
 
@@ -116,49 +116,59 @@ function VectorStore({ chunks, onIndexingComplete, onNavigate }) {
       ) : (
         <div className="flex flex-col gap-5">
           {/* Indexing trigger panel */}
-          <div className="flex flex-col gap-3.5 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
-            <div className="flex flex-wrap justify-between items-center gap-3">
+          {indexingComplete ? (
+            <div className="flex flex-col items-center justify-center text-center gap-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-200 dark:border-emerald-900/50 p-8 rounded transition-colors duration-200">
+              <div className="bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-full text-emerald-600 dark:text-emerald-500">
+                <CheckCircle2 size={28} />
+              </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300">Ingestion segments ready</h4>
-                <p className="text-[10px] text-slate-500 font-mono mt-0.5">
-                  <strong className="text-slate-700 dark:text-slate-200">{chunks.length}</strong> text segments prepared for Gemini embeddings.
+                <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 font-mono tracking-wide uppercase mb-1">Vector Store Ready</h4>
+                <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 font-mono">
+                  <strong className="text-emerald-700 dark:text-emerald-300">{chunks.length}</strong> chunks indexed into Qdrant.
                 </p>
               </div>
-              <button
-                className="bg-accent hover:bg-accent-hover text-white py-1.5 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
-                disabled={loading}
-                onClick={handleIndex}
-              >
-                {loading ? (
-                  <>
-                    <Loader size={14} className="animate-spin text-white" />
-                    <span>Indexing vectors...</span>
-                  </>
-                ) : (
-                  <span>Index chunks</span>
-                )}
-              </button>
-            </div>
-
-            {error && (
-              <div className="border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
-                <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                <span>{error}</span>
+              <div className="mt-2 flex gap-3">
+                <button 
+                  onClick={() => onNavigate && onNavigate(3)}
+                  className="bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
+                >
+                  Continue to RAG Query
+                </button>
               </div>
-            )}
-
-            {indexingComplete && (
-              <div className="border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/10 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
-                <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3.5 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
+              <div className="flex flex-wrap justify-between items-center gap-3">
                 <div>
-                  <p className="font-semibold text-emerald-600 dark:text-emerald-500">Indexing complete</p>
-                  <p className="text-slate-600 dark:text-slate-400 mt-0.5 text-[10px]">
-                    Successfully embedded and written <strong className="text-slate-800 dark:text-slate-200">{indexedCount}</strong> vectors into collection <code className="text-slate-800 dark:text-slate-300">{collectionName}</code>.
+                  <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300">Ingestion segments ready</h4>
+                  <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+                    <strong className="text-slate-700 dark:text-slate-200">{chunks.length}</strong> text segments prepared for Gemini embeddings.
                   </p>
                 </div>
+                <button
+                  className="bg-accent hover:bg-accent-hover text-white py-1.5 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
+                  disabled={loading}
+                  onClick={handleIndex}
+                >
+                  {loading ? (
+                    <>
+                      <Loader size={14} className="animate-spin text-white" />
+                      <span>Indexing vectors...</span>
+                    </>
+                  ) : (
+                    <span>Index chunks</span>
+                  )}
+                </button>
               </div>
-            )}
-          </div>
+
+              {error && (
+                <div className="border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 p-3.5 rounded flex items-start gap-2.5 text-xs font-mono">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Test Search Segment */}
           <div className="border-t border-slate-200 dark:border-border-hairline pt-4 transition-colors duration-200">

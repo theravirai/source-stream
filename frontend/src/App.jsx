@@ -211,6 +211,7 @@ function App() {
             {activeStep === 2 && (
               <VectorStore 
                 chunks={splitChunks} 
+                isIndexed={isIndexed}
                 onIndexingComplete={(complete) => {
                   setIsIndexed(complete)
                   // Refresh Qdrant stats
