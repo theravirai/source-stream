@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
-function ChatInterface({ isIndexed, onNavigate }) {
-  const [messages, setMessages] = useState([
+function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavigate }) {
+  const [messages, setMessages] = useState(ragSessionState?.messages || [
     {
       id: 'welcome',
       role: 'assistant',
@@ -12,14 +12,27 @@ function ChatInterface({ isIndexed, onNavigate }) {
       sources: []
     }
   ])
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(ragSessionState?.input || '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   
   // Drawer states
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [activeSources, setActiveSources] = useState([])
-  const [highlightedSourceIdx, setHighlightedSourceIdx] = useState(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(ragSessionState?.isDrawerOpen || false)
+  const [activeSources, setActiveSources] = useState(ragSessionState?.activeSources || [])
+  const [highlightedSourceIdx, setHighlightedSourceIdx] = useState(ragSessionState?.highlightedSourceIdx || null)
+
+  const stateRef = useRef({ messages, input, isDrawerOpen, activeSources, highlightedSourceIdx })
+  useEffect(() => {
+    stateRef.current = { messages, input, isDrawerOpen, activeSources, highlightedSourceIdx }
+  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx])
+
+  useEffect(() => {
+    return () => {
+      if (setRagSessionState) {
+        setRagSessionState(stateRef.current)
+      }
+    }
+  }, [setRagSessionState])
 
   const messagesEndRef = useRef(null)
 

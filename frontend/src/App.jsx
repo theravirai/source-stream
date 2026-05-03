@@ -32,6 +32,7 @@ function App() {
   const [splitChunks, setSplitChunks] = useState(null)
   const [isIndexed, setIsIndexed] = useState(false)
   const [vectorSearchState, setVectorSearchState] = useState(null)
+  const [ragSessionState, setRagSessionState] = useState(null)
   const [qdrantStats, setQdrantStats] = useState({ chunks_count: 0, status: 'unknown' })
   const [isLoadingStatus, setIsLoadingStatus] = useState(true)
 
@@ -194,6 +195,7 @@ function App() {
                   setSplitChunks(null)
                   setIsIndexed(false)
                   setVectorSearchState(null)
+                  setRagSessionState(null)
                 }} 
               />
             )}
@@ -206,6 +208,7 @@ function App() {
                   setSplitChunks(chunks)
                   setIsIndexed(false)
                   setVectorSearchState(null)
+                  setRagSessionState(null)
                 }}
                 onNavigate={(step) => setActiveStep(step)}
               />
@@ -220,6 +223,7 @@ function App() {
                 onIndexingComplete={(complete) => {
                   setIsIndexed(complete)
                   setVectorSearchState(null)
+                  setRagSessionState(null)
                   // Refresh Qdrant stats
                   fetch('/api/v1/vector-store/status', {
                     headers: { 'X-Session-Id': sessionId }
@@ -235,6 +239,8 @@ function App() {
             {activeStep === 3 && (
               <ChatInterface 
                 isIndexed={isIndexed}
+                ragSessionState={ragSessionState}
+                setRagSessionState={setRagSessionState}
                 onNavigate={(step) => setActiveStep(step)}
               />
             )}
