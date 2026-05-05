@@ -14,3 +14,4 @@ class QueryResponse(BaseModel):
     query: str
     answer: str
     source_documents: List[SourceDocument]
+    retrieved_candidates: List[SourceDocument] = Field(default_factory=list)

@@ -28,13 +28,23 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
                 metadata={k: v for k, v in doc.metadata.items() if k != "score"},
                 score=doc.metadata.get("score", 0.0)
             )
-            for doc in result["source_documents"]
+            for doc in result.get("source_documents", [])
+        ]
+        
+        candidate_docs = [
+            SourceDocument(
+                page_content=doc.page_content,
+                metadata={k: v for k, v in doc.metadata.items() if k != "score"},
+                score=doc.metadata.get("score", 0.0)
+            )
+            for doc in result.get("retrieved_candidates", [])
         ]
         
         return QueryResponse(
             query=result["query"],
             answer=result["answer"],
-            source_documents=source_docs
+            source_documents=source_docs,
+            retrieved_candidates=candidate_docs
         )
     except ValueError as e:
         logger.error(f"Configuration or validation error during RAG query: {e}")

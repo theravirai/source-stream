@@ -82,8 +82,16 @@ class RAGChainService:
             "question": query
         })
         
+        # 8. Check if LLM determined the context was irrelevant
+        answer_text = result["answer"]
+        # The prompt specifically instructs to say "I cannot find the answer in the provided documents."
+        answer_lower = answer_text.lower()
+        is_relevant = "cannot find the answer" not in answer_lower and \
+                      "cannot find any relevant information" not in answer_lower
+        
         return {
             "query": query,
-            "answer": result["answer"],
-            "source_documents": result["source_documents"]
+            "answer": answer_text,
+            "source_documents": result["source_documents"] if is_relevant else [],
+            "retrieved_candidates": result["source_documents"] if not is_relevant else []
         }

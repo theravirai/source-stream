@@ -91,7 +91,8 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
         role: 'assistant',
         content: data.answer,
         timestamp: assistantTimestamp,
-        sources: data.source_documents || []
+        sources: data.source_documents || [],
+        candidates: data.retrieved_candidates || []
       }])
     } catch (err) {
       setError(err.message)
@@ -187,6 +188,28 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                           onClick={() => openCitationsDrawer(msg.sources, idx)}
                         >
                           [{idx + 1}] {formatSourceLabel(source.metadata)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {msg.role === 'assistant' && msg.candidates && msg.candidates.length > 0 && (
+                  <div className="border-t border-slate-200 dark:border-border-hairline/60 mt-2.5 pt-2 flex flex-col gap-1">
+                    <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1">
+                      <Info size={10} /> Retrieved Candidates
+                    </span>
+                    <p className="text-[9px] text-slate-400 font-mono mb-1 leading-snug">
+                      These chunks were retrieved by vector similarity but were not sufficiently relevant to support an answer.
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-0.5">
+                      {msg.candidates.map((candidate, idx) => (
+                        <button
+                          key={idx}
+                          className="font-mono text-[10px] bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline border-dashed text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 px-2 py-0.5 rounded transition-all"
+                          onClick={() => openCitationsDrawer(msg.candidates, idx)}
+                        >
+                          [{idx + 1}] {formatSourceLabel(candidate.metadata)} ({candidate.score.toFixed(2)})
                         </button>
                       ))}
                     </div>
