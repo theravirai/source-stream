@@ -73,6 +73,9 @@ function VectorStore({ chunks, isIndexed, vectorSearchState, setVectorSearchStat
     setSearchResults(null)
     setExpandedResultIndex(null)
 
+    const finalK = parseInt(searchK, 10) || 4
+    if (searchK !== finalK) setSearchK(finalK)
+
     try {
       const response = await fetch('/api/v1/vector-store/search', {
         method: 'POST',
@@ -82,7 +85,7 @@ function VectorStore({ chunks, isIndexed, vectorSearchState, setVectorSearchStat
         },
         body: JSON.stringify({
           query: searchQuery,
-          k: searchK,
+          k: finalK,
         }),
       })
 
@@ -238,7 +241,21 @@ function VectorStore({ chunks, isIndexed, vectorSearchState, setVectorSearchStat
                     min="1"
                     max="20"
                     value={searchK}
-                    onChange={(e) => setSearchK(parseInt(e.target.value) || 4)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '') {
+                        setSearchK('')
+                      } else {
+                        const parsed = parseInt(val, 10)
+                        if (!isNaN(parsed)) setSearchK(parsed)
+                      }
+                    }}
+                    onBlur={(e) => {
+                      let val = parseInt(e.target.value, 10)
+                      if (isNaN(val) || val < 1) val = 1
+                      if (val > 20) val = 20
+                      setSearchK(val)
+                    }}
                     className="bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline text-slate-700 dark:text-slate-200 text-xs font-mono px-3 py-2 rounded focus:outline-none focus:border-accent w-full text-center transition-colors duration-200"
                   />
                 </div>
