@@ -278,7 +278,8 @@ Retrieves relevant document chunks and synthesizes a response using the configur
         },
         "score": 0.8954
       }
-    ]
+    ],
+    "retrieved_candidates": []
   }
   ```
 

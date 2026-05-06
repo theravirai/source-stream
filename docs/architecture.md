@@ -66,8 +66,8 @@ graph TD
    - The user interacts with the flat, developer-focused chat interface to ask natural language questions.
    - The client invokes `/api/v1/retriever/query`.
    - The backend retrieves relevant document chunks from Qdrant, dynamically injects similarity scores, and invokes the RAG chain composed using LangChain's LCEL Runnables.
-   - The Groq API LLM synthesizes a grounded answer based on the provided context.
-   - The client renders the response along with inline citations and a details drawer for source inspection.
+   - The Groq API LLM synthesizes a grounded answer based on the provided context. If the LLM determines the chunks do not contain the answer, it responds deterministically, and the backend routes the chunks to `retrieved_candidates` instead of `source_documents`.
+   - The client renders the response along with inline citations (if relevant) or an optional candidates viewer (if irrelevant) and a details drawer for source inspection.
 
 ---
 
