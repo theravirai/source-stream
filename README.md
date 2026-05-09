@@ -85,6 +85,20 @@ For a detailed spec of endpoints, parameters, and models, refer to [api.md](file
 - `POST /api/v1/retriever/query` - Context-grounded RAG query answering using Qdrant search and Groq synthesis.
 
 
+## ☁️ Deployment
+
+### Backend (Google Cloud Run)
+The backend is packaged using a Dockerfile. To deploy:
+1. Ensure the Google Cloud CLI (`gcloud`) is installed and authenticated.
+2. Provide necessary environment variables during deployment (`GEMINI_API_KEY`, `GROQ_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`).
+3. Deploy the service to Cloud Run.
+
+### Frontend (Firebase Hosting)
+The frontend utilizes Firebase Hosting and relies on Cloud Run rewrites for API traffic.
+1. Build the production application (`npm run build`).
+2. Replace `"your-firebase-project-id"` in `frontend/.firebaserc` with your actual Firebase project ID.
+3. Run `firebase deploy`. Traffic matching `/api/**` is seamlessly proxied to the deployed backend.
+
 ---
 
 ## 🧪 Running Tests
