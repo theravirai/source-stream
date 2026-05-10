@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "source-stream",
     "public": "dist",
     "ignore": [
       "firebase.json",
@@ -11,7 +12,7 @@
         "source": "/api/**",
         "run": {
           "serviceId": "source-stream-backend",
-          "region": "us-central1"
+          "region": "europe-west1"
         }
       },
       {
