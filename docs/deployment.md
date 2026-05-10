@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This guide describes how to deploy the `source-stream` application to production environments. 
+This guide describes how to deploy the `source-stream` application to production environments.
 
 ---
 
@@ -8,111 +8,73 @@ This guide describes how to deploy the `source-stream` application to production
 
 You must configure the following environment variables in your production hosting environments:
 
-### Backend Variables (Hugging Face Spaces)
+### Backend Variables (Google Cloud Run)
 * **`GEMINI_API_KEY`**: Your Google AI Studio production API key.
 * **`QDRANT_URL`**: The URL to your production Qdrant Cloud cluster.
 * **`QDRANT_API_KEY`**: The access token for the production Qdrant database.
 * **`QDRANT_COLLECTION`**: Name of the collection (e.g. `source_stream_prod`).
 * **`GROQ_API_KEY`**: The Groq API key for LLM-grounded synthesis (used in RAG stage).
-* **`CORS_ORIGINS`**: A JSON array containing the Vercel deployment URL to grant CORS permission (e.g. `["https://your-app.vercel.app"]`).
+* **`CORS_ORIGINS`**: A JSON array containing allowed origins (e.g. `["https://source-stream-prod.web.app"]`). Kept as a defensive fallback for direct Cloud Run access.
 * **`LOG_LEVEL`**: Typically set to `WARNING` or `ERROR` in production to reduce log bloat, or `INFO` for general monitoring.
 
-### Frontend Variables (Vercel)
-If you configure Vercel with path rewrites, no environment variables are strictly required on the client side since requests to `/api/*` are forwarded automatically. However, if direct CORS requests are preferred, define:
-* **`VITE_API_URL`**: The URL of your Hugging Face Space endpoint (e.g., `https://username-space-name.hf.space`).
+### Frontend Variables (Firebase Hosting)
+Because Firebase Hosting uses path rewrites to seamlessly proxy `/api/**` traffic to Google Cloud Run, the frontend does not require direct URL configurations like `VITE_API_URL`. All `fetch` requests can use relative paths (e.g., `/api/v1/...`).
 
 ---
 
-## 🐳 Backend Deployment: Hugging Face Spaces (Docker)
+## 🐳 Backend Deployment: Google Cloud Run
 
-Hugging Face Spaces provides a free-tier hosting solution that supports custom Docker environments.
+Google Cloud Run provides a fully managed, scalable container hosting platform.
 
-### Step 1: Create a Space
-1. Log in to [Hugging Face](https://huggingface.co/).
-2. Create a new Space.
-3. Select **Docker** as the SDK.
-4. Select **Blank** as the template.
-
-### Step 2: Create a Dockerfile
-Create a `Dockerfile` inside the `backend/` directory of your project. Here is a recommended production configuration:
-
-```dockerfile
-# backend/Dockerfile
-FROM python:3.11-slim
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv for fast dependency installation
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:${PATH}"
-
-WORKDIR /code
-
-# Copy dependency files
-COPY pyproject.toml requirements.txt /code/
-
-# Install python packages globally inside the container
-RUN uv pip install --system --no-cache -r requirements.txt
-
-# Copy backend app files
-COPY app /code/app
-
-# Hugging Face Spaces requires running under UID 1000 to avoid permission blocks
-RUN useradd -m -u 1000 user
-USER user
-ENV HOME=/home/user
-ENV PATH=/home/user/.local/bin:$PATH
-
-# Hugging Face Spaces expects traffic on port 7860
-EXPOSE 7860
-
-# Run Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+### Step 1: Install and Authenticate Google Cloud CLI
+Ensure you have the `gcloud` CLI installed and authenticated to your GCP project.
+```bash
+gcloud auth login
+gcloud config set project your-gcp-project-id
 ```
 
-### Step 3: Add Secrets in Hugging Face Settings
-Go to your Space's **Settings** tab and add the required variables (`GEMINI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `GROQ_API_KEY`, `CORS_ORIGINS`) as **Variables** or **Secrets**.
+### Step 2: Deploy to Cloud Run
+From the `backend/` directory, deploy using `gcloud run deploy`. This command can automatically build your image using Cloud Build or use an image you built manually.
 
-### Step 4: Push to Hugging Face
-You can push your repository to the Hugging Face Git remote, or configure a GitHub Action to deploy automatically when updates land on the main branch.
+```bash
+cd backend
+gcloud run deploy source-stream-backend \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --set-env-vars GEMINI_API_KEY=...,QDRANT_URL=...,QDRANT_API_KEY=...,QDRANT_COLLECTION=...,GROQ_API_KEY=...
+```
+*(Alternatively, configure secrets in Google Secret Manager for better security).*
 
 ---
 
-## ⚡ Frontend Deployment: Vercel
+## ⚡ Frontend Deployment: Firebase Hosting
 
-Vercel is the recommended hosting platform for Vite + React applications due to its global CDN distribution.
+Firebase Hosting serves the Vite + React Single Page Application and seamlessly proxies API requests to Cloud Run via native rewrite rules.
 
-### Step 1: Connect Repository to Vercel
-1. Log in to your [Vercel](https://vercel.com/) dashboard.
-2. Select **Add New** > **Project** and import your Git repository.
+### Step 1: Install Firebase Tools
+If you haven't already, install the Firebase CLI and login:
+```bash
+npm install -g firebase-tools
+firebase login
+```
 
-### Step 2: Configure Project Settings
-* **Framework Preset**: Vite
-* **Root Directory**: `frontend`
-* **Build Command**: `npm run build`
-* **Output Directory**: `dist`
-* **Install Command**: `npm install`
-
-### Step 3: Set Up Rewrite Proxy Rules
-To avoid CORS issues and simplify frontend requests, configure Vercel to route traffic going to `/api/*` straight to your Hugging Face Space backend. 
-
-Create a `vercel.json` file inside the `frontend/` folder:
-
+### Step 2: Set Project ID
+Update the placeholder in `frontend/.firebaserc` to your actual Firebase project ID:
 ```json
 {
-  "rewrites": [
-    {
-      "source": "/api/v1/:path*",
-      "destination": "https://<your-username>-<your-space-name>.hf.space/api/v1/:path*"
-    }
-  ]
+  "projects": {
+    "default": "your-firebase-project-id"
+  }
 }
 ```
-*Replace `<your-username>-<your-space-name>` with your actual Hugging Face Space subdomain.*
 
-### Step 4: Deploy
-Click **Deploy**. Once Vercel finishes building, your frontend will be live. Ensure that the Vercel deployment URL is added to the backend's `CORS_ORIGINS` list on Hugging Face to avoid API request rejections.
+### Step 3: Build and Deploy
+From the `frontend/` directory, build the Vite application and deploy to Firebase Hosting:
+```bash
+cd frontend
+npm run build
+firebase deploy
+```
+
+Firebase will upload the `dist/` directory and apply the rules in `firebase.json` to proxy `/api/**` traffic directly to your `source-stream-backend` on Cloud Run.
