@@ -15,3 +15,5 @@ class QueryResponse(BaseModel):
     answer: str
     source_documents: List[SourceDocument]
     retrieved_candidates: List[SourceDocument] = Field(default_factory=list)
+    guardrail_blocked: bool = False
+    guardrail_reason: str | None = None
