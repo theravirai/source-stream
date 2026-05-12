@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock } from 'lucide-react'
+import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
 function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavigate }) {
@@ -92,7 +92,9 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
         content: data.answer,
         timestamp: assistantTimestamp,
         sources: data.source_documents || [],
-        candidates: data.retrieved_candidates || []
+        candidates: data.retrieved_candidates || [],
+        guardrailBlocked: data.guardrail_blocked || false,
+        guardrailReason: data.guardrail_reason || null
       }])
     } catch (err) {
       setError(err.message)
@@ -170,10 +172,22 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                     ? 'bg-slate-100 dark:bg-ink-hover border-slate-200 dark:border-border-hairline text-right' 
                     : msg.isError 
                       ? 'bg-red-50 dark:bg-red-950/15 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-mono text-xs' 
-                      : 'bg-slate-50 dark:bg-ink-surface border-slate-200 dark:border-border-hairline'
+                      : msg.guardrailBlocked
+                        ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50 text-orange-800 dark:text-orange-200'
+                        : 'bg-slate-50 dark:bg-ink-surface border-slate-200 dark:border-border-hairline'
                 }`}
               >
+                {msg.guardrailBlocked && (
+                  <div className="flex items-center gap-1.5 text-xs font-bold mb-1 uppercase tracking-wide">
+                    <ShieldAlert size={14} /> Guardrail Blocked
+                  </div>
+                )}
                 <div>{msg.content}</div>
+                {msg.guardrailReason && (
+                   <div className="mt-2 text-[10px] font-mono opacity-80 border-t border-orange-200/50 dark:border-orange-900/50 pt-1.5">
+                     Reason: {msg.guardrailReason}
+                   </div>
+                )}
                 
                 {msg.role === 'assistant' && msg.sources && msg.sources.length > 0 && (
                   <div className="border-t border-slate-200 dark:border-border-hairline/60 mt-2.5 pt-2 flex flex-col gap-1">
