@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert } from 'lucide-react'
+import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
 function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavigate }) {
@@ -20,11 +20,14 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
   const [isDrawerOpen, setIsDrawerOpen] = useState(ragSessionState?.isDrawerOpen || false)
   const [activeSources, setActiveSources] = useState(ragSessionState?.activeSources || [])
   const [highlightedSourceIdx, setHighlightedSourceIdx] = useState(ragSessionState?.highlightedSourceIdx || null)
+  
+  const [isTelemetryDrawerOpen, setIsTelemetryDrawerOpen] = useState(ragSessionState?.isTelemetryDrawerOpen || false)
+  const [activeTelemetry, setActiveTelemetry] = useState(ragSessionState?.activeTelemetry || null)
 
-  const stateRef = useRef({ messages, input, isDrawerOpen, activeSources, highlightedSourceIdx })
+  const stateRef = useRef({ messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry })
   useEffect(() => {
-    stateRef.current = { messages, input, isDrawerOpen, activeSources, highlightedSourceIdx }
-  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx])
+    stateRef.current = { messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry }
+  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry])
 
   useEffect(() => {
     return () => {
@@ -94,7 +97,8 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
         sources: data.source_documents || [],
         candidates: data.retrieved_candidates || [],
         guardrailBlocked: data.guardrail_blocked || false,
-        guardrailReason: data.guardrail_reason || null
+        guardrailReason: data.guardrail_reason || null,
+        telemetry: data.telemetry || null
       }])
     } catch (err) {
       setError(err.message)
@@ -111,9 +115,16 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
   }
 
   const openCitationsDrawer = (sources, highlightIdx = null) => {
+    setIsTelemetryDrawerOpen(false)
     setActiveSources(sources)
     setHighlightedSourceIdx(highlightIdx)
     setIsDrawerOpen(true)
+  }
+
+  const openTelemetryDrawer = (telemetry) => {
+    setIsDrawerOpen(false)
+    setActiveTelemetry(telemetry)
+    setIsTelemetryDrawerOpen(true)
   }
 
   const formatSourceLabel = (metadata) => {
@@ -226,6 +237,19 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                           [{idx + 1}] {formatSourceLabel(candidate.metadata)} ({candidate.score.toFixed(2)})
                         </button>
                       ))}
+                    </div>
+                  </div>
+                )}
+                
+                {msg.role === 'assistant' && msg.telemetry && (
+                  <div className="border-t border-slate-200 dark:border-border-hairline/60 mt-2.5 pt-2 flex flex-col gap-1">
+                    <div className="flex flex-wrap gap-1.5 mt-0.5">
+                      <button
+                        className="font-mono text-[10px] bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-2 py-0.5 rounded transition-all flex items-center gap-1"
+                        onClick={() => openTelemetryDrawer(msg.telemetry)}
+                      >
+                        <Activity size={10} /> View Execution Trace ({msg.telemetry.total_duration_ms.toFixed(0)}ms)
+                      </button>
                     </div>
                   </div>
                 )}
@@ -356,6 +380,79 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Telemetry Side Drawer */}
+      {isTelemetryDrawerOpen && activeTelemetry && (
+        <div className="absolute md:relative top-0 right-0 h-full w-full md:w-[320px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 transition-colors duration-200">
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-4 py-3 bg-slate-50 dark:bg-[#0a0c10]">
+            <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-mono uppercase tracking-wider">
+              <Activity size={13} className="text-accent" />
+              <span>Execution Trace</span>
+            </h3>
+            <button className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1" onClick={() => setIsTelemetryDrawerOpen(false)}>
+              <X size={16} />
+            </button>
+          </div>
+          
+          <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-4">
+            {/* Total Time & Tokens Summary */}
+            <div className="grid grid-cols-2 gap-2">
+               <div className="bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline rounded p-3 flex flex-col items-center justify-center">
+                 <span className="text-[10px] font-mono text-slate-500 uppercase">Total Latency</span>
+                 <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_duration_ms.toFixed(0)} ms</span>
+               </div>
+               <div className="bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline rounded p-3 flex flex-col items-center justify-center">
+                 <span className="text-[10px] font-mono text-slate-500 uppercase">Total Tokens</span>
+                 <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_tokens}</span>
+               </div>
+            </div>
+
+            {/* Waterfall Stepper */}
+            <div className="flex flex-col gap-0 relative mt-2">
+              <div className="absolute left-[11px] top-2 bottom-2 w-px bg-slate-200 dark:bg-border-hairline z-0"></div>
+              {activeTelemetry.steps.map((step, idx) => (
+                <div key={idx} className="flex gap-3 relative z-10 mb-4 last:mb-0">
+                   <div className="w-6 h-6 rounded-full bg-white dark:bg-ink-surface border-2 border-slate-200 dark:border-border-hairline flex items-center justify-center shrink-0 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-accent"></div>
+                   </div>
+                   <div className="flex flex-col flex-grow">
+                      <div className="flex justify-between items-center">
+                         <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{step.name}</span>
+                         <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-ink-hover px-1.5 py-0.5 rounded">{step.duration_ms.toFixed(0)}ms</span>
+                      </div>
+                      
+                      {step.details && Object.keys(step.details).length > 0 && (
+                        <div className="mt-1.5 text-[9px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-[#0a0c10] p-1.5 rounded flex flex-col gap-0.5">
+                           {Object.entries(step.details).map(([k, v]) => (
+                             <div key={k} className="flex justify-between">
+                               <span>{k}:</span>
+                               <span className="text-slate-700 dark:text-slate-300 font-bold">{String(v)}</span>
+                             </div>
+                           ))}
+                        </div>
+                      )}
+                      
+                      {/* Show LLM Token Usage during RAG Execution */}
+                      {step.name.includes("RAG") && activeTelemetry.total_tokens > 0 && (
+                        <div className="mt-1.5 text-[9px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-[#0a0c10] p-1.5 rounded flex flex-col gap-0.5">
+                            <div className="flex justify-between">
+                               <span>Prompt Tokens:</span>
+                               <span className="text-slate-700 dark:text-slate-300 font-bold">{activeTelemetry.prompt_tokens}</span>
+                             </div>
+                             <div className="flex justify-between">
+                               <span>Completion Tokens:</span>
+                               <span className="text-slate-700 dark:text-slate-300 font-bold">{activeTelemetry.completion_tokens}</span>
+                             </div>
+                        </div>
+                      )}
+                   </div>
+                </div>
+              ))}
+            </div>
+            
           </div>
         </div>
       )}
