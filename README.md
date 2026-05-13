@@ -13,6 +13,7 @@ The ingestion pipeline is built in step-by-step modular stages:
 2. **Text Chunking**: Segments documents into smaller, overlapping chunks using LangChain's `RecursiveCharacterTextSplitter` to fit LLM context limits and retain semantic meaning.
 3. **Embeddings & Indexing**: Generates Google Gemini embeddings (`models/gemini-embedding-001`) and indexes chunks in Qdrant Cloud, supporting similarity search.
 4. **RAG Core & Chat**: Retrieves relevant document chunks and synthesizes grounded answers using Groq API. Features dynamic relevance evaluation to intelligently distinguish between actual citations and unused retrieved candidates.
+5. **Guardrails**: An LLM-as-a-judge layer that intercepts queries to detect prompt injection/toxicity, and evaluates generated answers post-retrieval to prevent hallucinations.
 
 ---
 

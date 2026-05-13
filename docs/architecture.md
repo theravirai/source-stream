@@ -18,6 +18,7 @@ graph TD
         VEC[Qdrant Vectorstore Service]
         LLM[Groq LLM Service]
         RAG[RAG Chain Core]
+        GUARD[Guardrails Service]
     end
 
     subgraph Remote [Remote Services]
@@ -27,6 +28,7 @@ graph TD
     end
 
     UI <-->|HTTP API| API
+    API <--> GUARD
     API --> DL
     API --> TS
     API --> EMB
@@ -65,8 +67,10 @@ graph TD
  4. **Step 4: RAG Query & LLM Synthesis**
    - The user interacts with the flat, developer-focused chat interface to ask natural language questions.
    - The client invokes `/api/v1/retriever/query`.
+   - **Input Guardrail**: The backend intercepts the query and uses the Guardrails Service to check for prompt injection or toxicity. If flagged, it blocks the query.
    - The backend retrieves relevant document chunks from Qdrant, dynamically injects similarity scores, and invokes the RAG chain composed using LangChain's LCEL Runnables.
    - The Groq API LLM synthesizes a grounded answer based on the provided context. If the LLM determines the chunks do not contain the answer, it responds deterministically, and the backend routes the chunks to `retrieved_candidates` instead of `source_documents`.
+   - **Output Guardrail**: The backend intercepts the generated answer and evaluates its groundedness. If a hallucination is detected, it returns a safe fallback.
    - The client renders the response along with inline citations (if relevant) or an optional candidates viewer (if irrelevant) and a details drawer for source inspection.
 
 ---
@@ -80,3 +84,4 @@ graph TD
 - **Vector Store Service (`backend/app/services/vectorstore.py`)**: Connects to Qdrant Cloud, manages vector collection verification/recreation, indexes chunks, and performs similarity searches.
 - **LLM Service (`backend/app/services/llm.py`)**: Instantiates ChatGroq for answer synthesis.
 - **RAG Core (`backend/app/services/rag_chain.py`)**: Combines Qdrant VectorStoreRetriever and ChatGroq using LCEL pipeline composition to produce structured query response formats.
+- **Guardrails Service (`backend/app/services/guardrails.py`)**: Utilizes an LLM-as-a-judge pattern to perform input validation (prompt injection detection) and output validation (hallucination detection) on RAG queries.
