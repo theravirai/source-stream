@@ -10,6 +10,18 @@ class SourceDocument(BaseModel):
     metadata: Dict[str, Any]
     score: float
 
+class TelemetryStep(BaseModel):
+    name: str
+    duration_ms: float
+    details: Dict[str, Any] | None = None
+
+class QueryTelemetry(BaseModel):
+    total_duration_ms: float
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    steps: List[TelemetryStep]
+
 class QueryResponse(BaseModel):
     query: str
     answer: str
@@ -17,3 +29,4 @@ class QueryResponse(BaseModel):
     retrieved_candidates: List[SourceDocument] = Field(default_factory=list)
     guardrail_blocked: bool = False
     guardrail_reason: str | None = None
+    telemetry: QueryTelemetry | None = None
