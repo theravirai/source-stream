@@ -59,7 +59,6 @@ class RAGChainService:
             RunnablePassthrough.assign(context=lambda x: format_docs(x["context"]))
             | prompt
             | llm
-            | StrOutputParser()
         )
         
         full_chain = RunnableParallel({
@@ -82,9 +81,16 @@ class RAGChainService:
             "question": query
         })
         
+        ai_message = result["answer"]
+        answer_text = ai_message.content
+        
+        # Extract token usage
+        token_usage = ai_message.response_metadata.get("token_usage", {})
+        prompt_tokens = token_usage.get("prompt_tokens", 0)
+        completion_tokens = token_usage.get("completion_tokens", 0)
+        total_tokens = token_usage.get("total_tokens", 0)
+        
         # 8. Check if LLM determined the context was irrelevant
-        answer_text = result["answer"]
-        # The prompt specifically instructs to say "I cannot find the answer in the provided documents."
         answer_lower = answer_text.lower()
         is_relevant = "cannot find the answer" not in answer_lower and \
                       "cannot find any relevant information" not in answer_lower
@@ -93,5 +99,8 @@ class RAGChainService:
             "query": query,
             "answer": answer_text,
             "source_documents": result["source_documents"] if is_relevant else [],
-            "retrieved_candidates": result["source_documents"] if not is_relevant else []
+            "retrieved_candidates": result["source_documents"] if not is_relevant else [],
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens
         }
