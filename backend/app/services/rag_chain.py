@@ -66,6 +66,9 @@ class RAGChainService:
             "source_documents": lambda x: x["context"]
         })
         
+        import time
+        
+        t_retrieval_start = time.perf_counter()
         # 6. Retrieve relevant documents with similarity scores from Vector Store
         raw_results = VectorStoreService.similarity_search(session_id=session_id, query=query, k=k)
         retrieved_docs = []
@@ -74,12 +77,15 @@ class RAGChainService:
             doc_copy = Document(page_content=doc.page_content, metadata=doc.metadata.copy())
             doc_copy.metadata["score"] = score
             retrieved_docs.append(doc_copy)
+        t_retrieval_end = time.perf_counter()
             
         # 7. Execute the LCEL chain
+        t_synthesis_start = time.perf_counter()
         result = full_chain.invoke({
             "context": retrieved_docs,
             "question": query
         })
+        t_synthesis_end = time.perf_counter()
         
         ai_message = result["answer"]
         answer_text = ai_message.content
@@ -102,5 +108,7 @@ class RAGChainService:
             "retrieved_candidates": result["source_documents"] if not is_relevant else [],
             "prompt_tokens": prompt_tokens,
             "completion_tokens": completion_tokens,
-            "total_tokens": total_tokens
+            "total_tokens": total_tokens,
+            "retrieval_ms": (t_retrieval_end - t_retrieval_start) * 1000,
+            "synthesis_ms": (t_synthesis_end - t_synthesis_start) * 1000
         }

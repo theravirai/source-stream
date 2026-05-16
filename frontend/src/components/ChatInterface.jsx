@@ -1,6 +1,75 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity } from 'lucide-react'
+import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity, CheckCircle2, AlertCircle, XCircle, ChevronDown, ChevronRight, Clock, Zap, ShieldCheck } from 'lucide-react'
 import { getSessionId } from '../utils/session'
+
+const TelemetryStepView = ({ step, idx }) => {
+  const [expanded, setExpanded] = useState(false)
+  const isFailed = step.details?.status === 'FAILED' || step.details?.status === 'BLOCKED'
+  const isSafe = step.details?.status === 'SAFE' || step.details?.status === 'PASSED'
+  const isWarning = (step.name === 'Retrieval' && step.details?.citations_selected === 0) || step.details?.status === 'WARNING'
+  
+  const statusColor = isFailed ? 'text-red-500' : isWarning ? 'text-amber-500' : isSafe ? 'text-emerald-500' : 'text-slate-400'
+  const StatusIcon = isFailed ? XCircle : isWarning ? AlertCircle : isSafe ? CheckCircle2 : Activity
+  
+  // Animation delay
+  const style = { animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }
+  
+  return (
+    <div className="flex relative animate-fade-in-up" style={style}>
+      <div className="absolute left-[11px] top-6 bottom-[-16px] w-[1.5px] bg-slate-200 dark:bg-slate-800 z-0" style={{ display: idx === 6 ? 'none' : 'block' }}></div>
+      
+      <div className={`w-6 h-6 rounded-full bg-slate-50 dark:bg-[#0a0c10] flex items-center justify-center shrink-0 z-10 ${statusColor} mt-0.5 ring-4 ring-white dark:ring-ink-surface`}>
+        <StatusIcon size={14} />
+      </div>
+      
+      <div className="flex flex-col flex-grow ml-3 mb-5">
+        <div 
+          className="flex justify-between items-center cursor-pointer group"
+          onClick={() => setExpanded(!expanded)}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200 tracking-wide">{step.name}</span>
+            {step.details?.status && (
+              <span className={`text-[9px] font-mono px-1.5 py-[2px] rounded uppercase font-semibold tracking-wider ${
+                isFailed ? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400 border border-red-200 dark:border-red-900/50' :
+                isWarning ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50' :
+                'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30'
+              }`}>
+                {step.details.status}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+            <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded">{step.duration_ms.toFixed(1)}ms</span>
+            <div className="w-4 h-4 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} className="opacity-40 group-hover:opacity-100 transition-opacity" />}
+            </div>
+          </div>
+        </div>
+        
+        {step.details?.reason && (
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-snug">
+            {step.details.reason}
+          </div>
+        )}
+        
+        {expanded && (
+          <div className="mt-2.5 text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0c10] p-2.5 rounded flex flex-col gap-1.5 border border-slate-200 dark:border-slate-800/80">
+             {Object.entries(step.details).filter(([k]) => k !== 'status' && k !== 'reason').map(([k, v]) => (
+               <div key={k} className="flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50 last:border-0 pb-1.5 last:pb-0">
+                 <span className="opacity-70">{k.replace(/_/g, ' ')}</span>
+                 <span className="font-semibold text-slate-800 dark:text-slate-300">{String(v)}</span>
+               </div>
+             ))}
+             {Object.keys(step.details).filter(([k]) => k !== 'status' && k !== 'reason').length === 0 && (
+               <div className="text-center opacity-50 italic py-1">No additional telemetry</div>
+             )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavigate }) {
   const [messages, setMessages] = useState(ragSessionState?.messages || [
@@ -386,76 +455,67 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
 
       {/* Telemetry Side Drawer */}
       {isTelemetryDrawerOpen && activeTelemetry && (
-        <div className="absolute md:relative top-0 right-0 h-full w-full md:w-[320px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 transition-colors duration-200">
-          <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-4 py-3 bg-slate-50 dark:bg-[#0a0c10]">
-            <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-mono uppercase tracking-wider">
-              <Activity size={13} className="text-accent" />
+        <div className="absolute md:relative top-0 right-0 h-full w-full md:w-[360px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 transition-colors duration-200 shadow-xl md:shadow-none">
+          <style>{`
+            @keyframes fadeInUp {
+              from { opacity: 0; transform: translateY(8px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+          `}</style>
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-5 py-4 bg-slate-50 dark:bg-[#0a0c10]">
+            <h3 className="text-[13px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 font-mono uppercase tracking-widest">
+              <Activity size={14} className="text-accent" />
               <span>Execution Trace</span>
             </h3>
-            <button className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1" onClick={() => setIsTelemetryDrawerOpen(false)}>
+            <button className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" onClick={() => setIsTelemetryDrawerOpen(false)}>
               <X size={16} />
             </button>
           </div>
           
-          <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-4">
-            {/* Total Time & Tokens Summary */}
-            <div className="grid grid-cols-2 gap-2">
-               <div className="bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline rounded p-3 flex flex-col items-center justify-center">
-                 <span className="text-[10px] font-mono text-slate-500 uppercase">Total Latency</span>
-                 <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_duration_ms.toFixed(0)} ms</span>
-               </div>
-               <div className="bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline rounded p-3 flex flex-col items-center justify-center">
-                 <span className="text-[10px] font-mono text-slate-500 uppercase">Total Tokens</span>
-                 <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_tokens}</span>
-               </div>
+          <div className="flex-grow overflow-y-auto p-5 flex flex-col gap-5 bg-white dark:bg-ink-surface">
+            {/* Professional Summary Header */}
+            <div className="flex flex-col gap-3 bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-slate-800/80 p-4 rounded-md">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-800/50">
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Clock size={12}/> Total Latency</span>
+                <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_duration_ms.toFixed(0)} ms</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="flex flex-col gap-1">
+                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Zap size={12}/> Prompt</span>
+                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.prompt_tokens} tkns</span>
+                 </div>
+                 <div className="flex flex-col gap-1">
+                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Zap size={12}/> Completion</span>
+                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.completion_tokens} tkns</span>
+                 </div>
+                 <div className="flex flex-col gap-1">
+                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><BookOpen size={12}/> Retrieved</span>
+                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                     {activeTelemetry.steps.find(s => s.name === 'Retrieval')?.details?.retrieved_chunks || 0} chunks
+                   </span>
+                 </div>
+                 <div className="flex flex-col gap-1">
+                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><FileText size={12}/> Citations</span>
+                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                     {activeTelemetry.steps.find(s => s.name === 'Retrieval')?.details?.citations_selected || 0} used
+                   </span>
+                 </div>
+              </div>
             </div>
 
-            {/* Waterfall Stepper */}
-            <div className="flex flex-col gap-0 relative mt-2">
-              <div className="absolute left-[11px] top-2 bottom-2 w-px bg-slate-200 dark:bg-border-hairline z-0"></div>
+            {/* Pipeline Timeline */}
+            <div className="flex flex-col mt-2 pl-1">
+              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Pipeline Execution</span>
               {activeTelemetry.steps.map((step, idx) => (
-                <div key={idx} className="flex gap-3 relative z-10 mb-4 last:mb-0">
-                   <div className="w-6 h-6 rounded-full bg-white dark:bg-ink-surface border-2 border-slate-200 dark:border-border-hairline flex items-center justify-center shrink-0 mt-0.5">
-                      <div className="w-2 h-2 rounded-full bg-accent"></div>
-                   </div>
-                   <div className="flex flex-col flex-grow">
-                      <div className="flex justify-between items-center">
-                         <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{step.name}</span>
-                         <span className="text-[10px] font-mono text-slate-500 bg-slate-100 dark:bg-ink-hover px-1.5 py-0.5 rounded">{step.duration_ms.toFixed(0)}ms</span>
-                      </div>
-                      
-                      {step.details && Object.keys(step.details).length > 0 && (
-                        <div className="mt-1.5 text-[9px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-[#0a0c10] p-1.5 rounded flex flex-col gap-0.5">
-                           {Object.entries(step.details).map(([k, v]) => (
-                             <div key={k} className="flex justify-between">
-                               <span>{k}:</span>
-                               <span className="text-slate-700 dark:text-slate-300 font-bold">{String(v)}</span>
-                             </div>
-                           ))}
-                        </div>
-                      )}
-                      
-                      {/* Show LLM Token Usage during RAG Execution */}
-                      {step.name.includes("RAG") && activeTelemetry.total_tokens > 0 && (
-                        <div className="mt-1.5 text-[9px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-hairline bg-slate-50 dark:bg-[#0a0c10] p-1.5 rounded flex flex-col gap-0.5">
-                            <div className="flex justify-between">
-                               <span>Prompt Tokens:</span>
-                               <span className="text-slate-700 dark:text-slate-300 font-bold">{activeTelemetry.prompt_tokens}</span>
-                             </div>
-                             <div className="flex justify-between">
-                               <span>Completion Tokens:</span>
-                               <span className="text-slate-700 dark:text-slate-300 font-bold">{activeTelemetry.completion_tokens}</span>
-                             </div>
-                        </div>
-                      )}
-                   </div>
-                </div>
+                <TelemetryStepView key={idx} step={step} idx={idx} />
               ))}
             </div>
             
           </div>
         </div>
       )}
+
         </>
       )}
     </div>
