@@ -11,12 +11,37 @@ logger = logging.getLogger(__name__)
 
 class RAGChainService:
     @classmethod
-    def query(cls, session_id: str, query: str, k: int = 4) -> Dict[str, Any]:
+    def query(cls, session_id: str, query: str, k: int = 4, requires_retrieval: bool = True) -> Dict[str, Any]:
         """
-        Retrieves relevant documents from Qdrant and generates a grounded response using Groq.
-        Uses LangChain Expression Language (LCEL) Runnables.
+        Retrieves relevant documents and generates a response, or answers conversationally if retrieval is unneeded.
         """
-        logger.info(f"Executing RAG query: '{query}' with k={k} for session '{session_id}'")
+        logger.info(f"Executing query: '{query}' (requires_retrieval={requires_retrieval}) for session '{session_id}'")
+        
+        llm = get_llm_service()
+        import time
+        
+        if not requires_retrieval:
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", "You are a helpful, professional, and knowledgeable AI assistant for the 'Source Stream' application. Answer the user's conversational message naturally and concisely. Do not hallucinate factual information."),
+                ("human", "{question}")
+            ])
+            t_synthesis_start = time.perf_counter()
+            ai_message = (prompt | llm).invoke({"question": query})
+            t_synthesis_end = time.perf_counter()
+            
+            token_usage = ai_message.response_metadata.get("token_usage", {})
+            return {
+                "query": query,
+                "answer": ai_message.content,
+                "source_documents": [],
+                "retrieved_candidates": [],
+                "prompt_tokens": token_usage.get("prompt_tokens", 0),
+                "completion_tokens": token_usage.get("completion_tokens", 0),
+                "total_tokens": token_usage.get("total_tokens", 0),
+                "retrieval_ms": 0.0,
+                "synthesis_ms": (t_synthesis_end - t_synthesis_start) * 1000
+            }
+
         
         # 1. Get vector store and initialize the retriever
         vector_store = VectorStoreService.get_vector_store(session_id)
@@ -24,9 +49,6 @@ class RAGChainService:
             search_type="similarity",
             search_kwargs={"k": k}
         )
-        
-        # 2. Get LLM service
-        llm = get_llm_service()
         
         # 3. Create the prompt template
         system_prompt = (

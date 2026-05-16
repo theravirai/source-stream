@@ -71,7 +71,7 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
         ))
             
         # RAG Execution
-        result = RAGChainService.query(session_id=x_session_id, query=request.query, k=request.k)
+        result = RAGChainService.query(session_id=x_session_id, query=request.query, k=request.k, requires_retrieval=query_intent.requires_retrieval)
         
         source_docs_raw = result.get("source_documents", [])
         candidates_raw = result.get("retrieved_candidates", [])
@@ -80,39 +80,60 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
         highest_score = max([doc.metadata.get("score", 0.0) for doc in all_retrieved]) if all_retrieved else 0.0
         avg_score = sum([doc.metadata.get("score", 0.0) for doc in all_retrieved]) / len(all_retrieved) if all_retrieved else 0.0
         
-        # 3. Retrieval
-        steps.append(TelemetryStep(
-            name="Retrieval",
-            duration_ms=result.get("retrieval_ms", 0.0),
-            details={
-                "status": "PASSED",
-                "retrieved_chunks": len(all_retrieved),
-                "rejected_chunks": len(candidates_raw),
-                "citations_selected": len(source_docs_raw),
-                "highest_similarity": f"{highest_score:.2f}",
-                "average_similarity": f"{avg_score:.2f}"
-            }
-        ))
+        # 3. Document Search
+        if query_intent.requires_retrieval:
+            steps.append(TelemetryStep(
+                name="Document Search",
+                duration_ms=result.get("retrieval_ms", 0.0),
+                details={
+                    "status": "PASSED",
+                    "retrieved_chunks": len(all_retrieved),
+                    "rejected_chunks": len(candidates_raw),
+                    "citations_selected": len(source_docs_raw),
+                    "highest_similarity": f"{highest_score:.2f}",
+                    "average_similarity": f"{avg_score:.2f}",
+                    "reason": "Executed because the query appears to reference indexed knowledge."
+                }
+            ))
+            
+            # 4. Prompt Construction
+            steps.append(TelemetryStep(
+                name="Prompt Construction",
+                duration_ms=1.2,
+                details={
+                    "status": "PASSED",
+                    "chunks_merged": len(source_docs_raw),
+                    "reason": "Assembled retrieved context into LLM prompt."
+                }
+            ))
+        else:
+            steps.append(TelemetryStep(
+                name="Document Search",
+                duration_ms=0.0,
+                details={
+                    "status": "SKIPPED",
+                    "reason": "Skipped because this is a general conversational request."
+                }
+            ))
+            steps.append(TelemetryStep(
+                name="Prompt Construction",
+                duration_ms=0.0,
+                details={
+                    "status": "SKIPPED",
+                    "reason": "Skipped because no documents were retrieved."
+                }
+            ))
         
-        # 4. Context assembly
+        # 5. AI Response Generation
         steps.append(TelemetryStep(
-            name="Context assembly",
-            duration_ms=1.2,
-            details={
-                "status": "PASSED",
-                "chunks_merged": len(source_docs_raw)
-            }
-        ))
-        
-        # 5. LLM generation
-        steps.append(TelemetryStep(
-            name="LLM generation",
+            name="AI Response Generation",
             duration_ms=result.get("synthesis_ms", 0.0),
             details={
                 "status": "PASSED",
                 "prompt_tokens": result.get("prompt_tokens", 0),
                 "completion_tokens": result.get("completion_tokens", 0),
-                "total_tokens": result.get("total_tokens", 0)
+                "total_tokens": result.get("total_tokens", 0),
+                "reason": "Generated conversational response." if not query_intent.requires_retrieval else "Generated context-grounded response."
             }
         ))
         
@@ -135,13 +156,13 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
             for doc in candidates_raw
         ]
         
-        # 6. Output validation
+        # 6. Response Verification
         step_start = time.perf_counter()
         context = [doc.page_content for doc in source_docs_raw]
         output_eval = await guardrails.evaluate_groundedness(result["answer"], context)
         step_duration = (time.perf_counter() - step_start) * 1000
         steps.append(TelemetryStep(
-            name="Output validation", 
+            name="Response Verification", 
             duration_ms=step_duration, 
             details={
                 "status": "SAFE" if output_eval.is_safe else "FAILED",
