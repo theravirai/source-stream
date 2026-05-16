@@ -14,6 +14,9 @@ const TelemetryStepView = ({ step, idx }) => {
   // Animation delay
   const style = { animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }
   
+  const extraDetails = Object.entries(step.details || {}).filter(([k]) => k !== 'status' && k !== 'reason')
+  const hasExtraDetails = extraDetails.length > 0
+  
   return (
     <div className="flex relative animate-fade-in-up" style={style}>
       <div className="absolute left-[11px] top-6 bottom-[-16px] w-[1.5px] bg-slate-200 dark:bg-slate-800 z-0" style={{ display: idx === 6 ? 'none' : 'block' }}></div>
@@ -24,8 +27,8 @@ const TelemetryStepView = ({ step, idx }) => {
       
       <div className="flex flex-col flex-grow ml-3 mb-5">
         <div 
-          className="flex justify-between items-center cursor-pointer group"
-          onClick={() => setExpanded(!expanded)}
+          className={`flex justify-between items-center group ${hasExtraDetails ? 'cursor-pointer' : ''}`}
+          onClick={() => hasExtraDetails && setExpanded(!expanded)}
         >
           <div className="flex items-center gap-2">
             <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200 tracking-wide">{step.name}</span>
@@ -41,9 +44,11 @@ const TelemetryStepView = ({ step, idx }) => {
           </div>
           <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
             <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800/50 px-1.5 py-0.5 rounded">{step.duration_ms.toFixed(1)}ms</span>
-            <div className="w-4 h-4 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-700">
-              {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} className="opacity-40 group-hover:opacity-100 transition-opacity" />}
-            </div>
+            {hasExtraDetails && (
+              <div className="w-4 h-4 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} className="opacity-40 group-hover:opacity-100 transition-opacity" />}
+              </div>
+            )}
           </div>
         </div>
         
@@ -53,17 +58,14 @@ const TelemetryStepView = ({ step, idx }) => {
           </div>
         )}
         
-        {expanded && (
+        {expanded && hasExtraDetails && (
           <div className="mt-2.5 text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-[#0a0c10] p-2.5 rounded flex flex-col gap-1.5 border border-slate-200 dark:border-slate-800/80">
-             {Object.entries(step.details).filter(([k]) => k !== 'status' && k !== 'reason').map(([k, v]) => (
+             {extraDetails.map(([k, v]) => (
                <div key={k} className="flex justify-between items-center border-b border-slate-200/50 dark:border-slate-800/50 last:border-0 pb-1.5 last:pb-0">
                  <span className="opacity-70">{k.replace(/_/g, ' ')}</span>
                  <span className="font-semibold text-slate-800 dark:text-slate-300">{String(v)}</span>
                </div>
              ))}
-             {Object.keys(step.details).filter(([k]) => k !== 'status' && k !== 'reason').length === 0 && (
-               <div className="text-center opacity-50 italic py-1">No additional telemetry</div>
-             )}
           </div>
         )}
       </div>
@@ -312,12 +314,13 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                 
                 {msg.role === 'assistant' && msg.telemetry && (
                   <div className="border-t border-slate-200 dark:border-border-hairline/60 mt-2.5 pt-2 flex flex-col gap-1">
-                    <div className="flex flex-wrap gap-1.5 mt-0.5">
-                      <button
-                        className="font-mono text-[10px] bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 px-2 py-0.5 rounded transition-all flex items-center gap-1"
+                    <div className="flex items-center mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/50">
+                      <button 
+                        className="font-mono text-[10px] uppercase font-bold tracking-wider bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 shadow-sm"
                         onClick={() => openTelemetryDrawer(msg.telemetry)}
                       >
-                        <Activity size={10} /> View Execution Trace ({msg.telemetry.total_duration_ms.toFixed(0)}ms)
+                        <Activity size={12} />
+                        View Execution Trace ({msg.telemetry.total_duration_ms.toFixed(0)}ms)
                       </button>
                     </div>
                   </div>
