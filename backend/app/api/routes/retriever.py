@@ -55,6 +55,21 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
                 telemetry=telemetry
             )
             
+        # 2.5 Query Analysis (Router)
+        from app.services.query_router import QueryRouterService
+        step_start = time.perf_counter()
+        query_intent = await QueryRouterService.analyze_intent(request.query)
+        step_duration = (time.perf_counter() - step_start) * 1000
+        steps.append(TelemetryStep(
+            name="Query Analysis",
+            duration_ms=step_duration,
+            details={
+                "status": "PASSED",
+                "requires_retrieval": query_intent.requires_retrieval,
+                "reason": query_intent.reason
+            }
+        ))
+            
         # RAG Execution
         result = RAGChainService.query(session_id=x_session_id, query=request.query, k=request.k)
         
