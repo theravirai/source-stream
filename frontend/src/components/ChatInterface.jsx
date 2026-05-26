@@ -95,11 +95,12 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
   
   const [isTelemetryDrawerOpen, setIsTelemetryDrawerOpen] = useState(ragSessionState?.isTelemetryDrawerOpen || false)
   const [activeTelemetry, setActiveTelemetry] = useState(ragSessionState?.activeTelemetry || null)
+  const [activeTelemetryMsgId, setActiveTelemetryMsgId] = useState(ragSessionState?.activeTelemetryMsgId || null)
 
-  const stateRef = useRef({ messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry })
+  const stateRef = useRef({ messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId })
   useEffect(() => {
-    stateRef.current = { messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry }
-  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry])
+    stateRef.current = { messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId }
+  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId])
 
   useEffect(() => {
     return () => {
@@ -127,6 +128,7 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
     setError(null)
     
     const userMsgId = `user-${Date.now()}`
+    const assistantMsgId = `assistant-${Date.now()}`
     const userTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     
     setMessages(prev => [...prev, {
@@ -137,6 +139,14 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
     }])
     
     setIsLoading(true)
+    
+    setIsTelemetryDrawerOpen(prevOpen => {
+      if (prevOpen) {
+        setActiveTelemetryMsgId(assistantMsgId)
+        setActiveTelemetry(null)
+      }
+      return prevOpen
+    })
 
     try {
       const response = await fetch('/api/v1/retriever/query', {
@@ -158,7 +168,6 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
 
       const data = await response.json()
       
-      const assistantMsgId = `assistant-${Date.now()}`
       const assistantTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
       setMessages(prev => [...prev, {
@@ -172,6 +181,13 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
         guardrailReason: data.guardrail_reason || null,
         telemetry: data.telemetry || null
       }])
+      
+      setActiveTelemetryMsgId(currentId => {
+        if (currentId === assistantMsgId) {
+          setActiveTelemetry(data.telemetry || null)
+        }
+        return currentId
+      })
     } catch (err) {
       setError(err.message)
       setMessages(prev => [...prev, {
@@ -193,9 +209,10 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
     setIsDrawerOpen(true)
   }
 
-  const openTelemetryDrawer = (telemetry) => {
+  const openTelemetryDrawer = (msgId, telemetry) => {
     setIsDrawerOpen(false)
     setActiveTelemetry(telemetry)
+    setActiveTelemetryMsgId(msgId)
     setIsTelemetryDrawerOpen(true)
   }
 
@@ -250,14 +267,16 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
               }`}
             >
               <div 
-                className={`px-3.5 py-2 rounded text-slate-800 dark:text-slate-100 font-sans max-w-[85%] border leading-relaxed transition-colors duration-200 ${
+                className={`px-3.5 py-2 rounded text-slate-800 dark:text-slate-100 font-sans max-w-[85%] border leading-relaxed transition-all duration-200 ${
                   msg.role === 'user' 
                     ? 'bg-slate-100 dark:bg-ink-hover border-slate-200 dark:border-border-hairline text-right' 
                     : msg.isError 
                       ? 'bg-red-50 dark:bg-red-950/15 border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 font-mono text-xs' 
                       : msg.guardrailBlocked
                         ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/50 text-orange-800 dark:text-orange-200'
-                        : 'bg-slate-50 dark:bg-ink-surface border-slate-200 dark:border-border-hairline'
+                        : isTelemetryDrawerOpen && activeTelemetryMsgId === msg.id
+                          ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800 ring-2 ring-blue-500/20 shadow-sm'
+                          : 'bg-slate-50 dark:bg-ink-surface border-slate-200 dark:border-border-hairline'
                 }`}
               >
                 {msg.guardrailBlocked && (
@@ -317,8 +336,8 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                   <div className="border-t border-slate-200 dark:border-border-hairline/60 mt-2.5 pt-2 flex flex-col gap-1">
                     <div className="flex items-center mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/50">
                       <button 
-                        className="font-mono text-[10px] uppercase font-bold tracking-wider bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 px-3 py-1.5 rounded transition-colors flex items-center gap-1.5 shadow-sm"
-                        onClick={() => openTelemetryDrawer(msg.telemetry)}
+                        onClick={() => openTelemetryDrawer(msg.id, msg.telemetry)}
+                        className={`flex items-center gap-1.5 text-[9px] font-mono font-bold tracking-wider px-2.5 py-1.5 rounded transition-colors uppercase ${isTelemetryDrawerOpen && activeTelemetryMsgId === msg.id ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 dark:text-indigo-400'}`}
                       >
                         <Activity size={12} />
                         View Execution Trace ({msg.telemetry.total_duration_ms.toFixed(0)}ms)
@@ -458,7 +477,7 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
       )}
 
       {/* Telemetry Side Drawer */}
-      {isTelemetryDrawerOpen && activeTelemetry && (
+      {isTelemetryDrawerOpen && (
         <div className="absolute md:relative top-0 right-0 h-full w-full md:w-[360px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 transition-colors duration-200 shadow-xl md:shadow-none">
           <style>{`
             @keyframes fadeInUp {
@@ -478,7 +497,14 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
           </div>
           
           <div className="flex-grow overflow-y-auto p-5 flex flex-col gap-5 bg-white dark:bg-ink-surface">
-            {/* Professional Summary Header */}
+            {!activeTelemetry ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 mt-20 gap-3">
+                <Activity size={24} className="animate-pulse text-accent" />
+                <span className="font-mono text-[10px] uppercase tracking-wider">Awaiting Telemetry...</span>
+              </div>
+            ) : (
+              <>
+                {/* Professional Summary Header */}
             <div className="flex flex-col gap-3 bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-slate-800/80 p-4 rounded-md">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-800/50">
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Clock size={12}/> Total Latency</span>
@@ -516,6 +542,8 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
               ))}
             </div>
             
+              </>
+            )}
           </div>
         </div>
       )}
