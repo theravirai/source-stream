@@ -7,20 +7,20 @@ client = TestClient(app)
 
 def test_retriever_endpoints_validation():
     # Empty query (whitespace)
-    response = client.post("/api/v1/retriever/query", json={"query": "   ", "k": 4})
+    response = client.post("/api/v1/retriever/query", json={"query": "   ", "k": 4}, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 400
     assert response.json()["detail"] == "Query cannot be empty or contain only whitespace."
 
     # Missing query parameter
-    response = client.post("/api/v1/retriever/query", json={"k": 4})
+    response = client.post("/api/v1/retriever/query", json={"k": 4}, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 422
 
     # Invalid k parameter (too low)
-    response = client.post("/api/v1/retriever/query", json={"query": "test query", "k": 0})
+    response = client.post("/api/v1/retriever/query", json={"query": "test query", "k": 0}, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 422
 
     # Invalid k parameter (too high)
-    response = client.post("/api/v1/retriever/query", json={"query": "test query", "k": 21})
+    response = client.post("/api/v1/retriever/query", json={"query": "test query", "k": 21}, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 422
 
 
@@ -40,7 +40,7 @@ def test_query_endpoint_success(mock_rag_query):
         "query": "what is source-stream?",
         "k": 1
     }
-    response = client.post("/api/v1/retriever/query", json=payload)
+    response = client.post("/api/v1/retriever/query", json=payload, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 200
     
     data = response.json()
@@ -50,4 +50,4 @@ def test_query_endpoint_success(mock_rag_query):
     assert data["source_documents"][0]["page_content"] == "Source Stream is a RAG application."
     assert data["source_documents"][0]["score"] == 0.95
     assert data["source_documents"][0]["metadata"]["source"] == "docs.txt"
-    mock_rag_query.assert_called_once_with(query="what is source-stream?", k=1)
+    mock_rag_query.assert_called_once_with(session_id="test_session", query="what is source-stream?", k=1, requires_retrieval=True)

@@ -158,15 +158,24 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
         
         # 6. Response Verification
         step_start = time.perf_counter()
-        context = [doc.page_content for doc in source_docs_raw]
-        output_eval = await guardrails.evaluate_groundedness(result["answer"], context)
+        
+        if not query_intent.requires_retrieval:
+            output_eval = GuardrailResult(is_safe=True, reason="General conversational response. Grounding verification skipped.")
+        elif not source_docs_raw:
+            output_eval = GuardrailResult(is_safe=True, reason="System fell back to unanswerable response because citations were not helpful.")
+        else:
+            context = [doc.page_content for doc in source_docs_raw]
+            output_eval = await guardrails.evaluate_groundedness(result["answer"], context)
+            if output_eval.is_safe and not output_eval.reason:
+                output_eval.reason = "Answer was successfully grounded in retrieved context. Citations were legitimately referenced."
+
         step_duration = (time.perf_counter() - step_start) * 1000
         steps.append(TelemetryStep(
             name="Response Verification", 
             duration_ms=step_duration, 
             details={
                 "status": "SAFE" if output_eval.is_safe else "FAILED",
-                "reason": output_eval.reason or "Information properly grounded in context."
+                "reason": output_eval.reason
             }
         ))
         

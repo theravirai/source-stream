@@ -8,11 +8,11 @@ client = TestClient(app)
 
 def test_vector_store_endpoints_validation():
     # Empty search query
-    response = client.post("/api/v1/vector-store/search", json={})
+    response = client.post("/api/v1/vector-store/search", json={}, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 422
 
     # Empty index documents
-    response = client.post("/api/v1/vector-store/index", json={})
+    response = client.post("/api/v1/vector-store/index", json={}, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 422
 
 @patch("app.services.vectorstore.VectorStoreService.index_documents")
@@ -25,7 +25,7 @@ def test_index_endpoint_success(mock_index_documents):
             for i in range(5)
         ]
     }
-    response = client.post("/api/v1/vector-store/index", json=payload)
+    response = client.post("/api/v1/vector-store/index", json=payload, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"
@@ -46,7 +46,7 @@ def test_search_endpoint_success(mock_similarity_search):
         "query": "test query",
         "k": 2
     }
-    response = client.post("/api/v1/vector-store/search", json=payload)
+    response = client.post("/api/v1/vector-store/search", json=payload, headers={"X-Session-ID": "test_session"})
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
