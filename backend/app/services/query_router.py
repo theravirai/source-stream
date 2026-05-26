@@ -21,8 +21,8 @@ class QueryRouterService:
         
         prompt = PromptTemplate(
             template="Analyze the following user query to determine if it requires retrieving factual documents from a knowledge base.\n\n"
-                     "Return True for 'requires_retrieval' if the query asks for facts, concepts, definitions, or specific information that would be found in documentation.\n"
-                     "Return False if it is a general greeting, conversational pleasantry (e.g. 'hi', 'how are you?'), or a generic request for help without specifics.\n\n"
+                     "Return True for 'requires_retrieval' if the query asks for facts, concepts, definitions, specific information, or explicitly asks to summarize the context/knowledge base.\n"
+                     "Return False if it is a general greeting (e.g. 'hi'), a conversational pleasantry, or a generic request for help without specifics (e.g. 'can you help me?').\n\n"
                      "Format Instructions:\n{format_instructions}\n\n"
                      "Query: {query}\n",
             input_variables=["query"],
