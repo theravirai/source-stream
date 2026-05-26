@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity, CheckCircle2, AlertCircle, XCircle, ChevronDown, ChevronRight, Clock, Zap, ShieldCheck } from 'lucide-react'
+import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity, CheckCircle2, AlertCircle, XCircle, ChevronDown, ChevronRight, Clock, Zap, ShieldCheck, AlertTriangle, MinusCircle } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
-const TelemetryStepView = ({ step, idx }) => {
+const TelemetryStepView = ({ step, idx, isLast }) => {
   const [expanded, setExpanded] = useState(false)
   const isFailed = step.details?.status === 'FAILED' || step.details?.status === 'BLOCKED'
-  const isSafe = step.details?.status === 'SAFE' || step.details?.status === 'PASSED'
-  const isWarning = (step.name === 'Retrieval' && step.details?.citations_selected === 0) || step.details?.status === 'WARNING'
+  const isWarning = (step.name === 'Document Search' && step.details?.citations_selected === 0) || step.details?.status === 'WARNING'
+  const isSkipped = step.details?.status === 'SKIPPED'
   
-  const statusColor = isFailed ? 'text-red-500' : isWarning ? 'text-amber-500' : isSafe ? 'text-emerald-500' : 'text-slate-400'
-  const StatusIcon = isFailed ? XCircle : isWarning ? AlertCircle : isSafe ? CheckCircle2 : Activity
+  const StatusIcon = isFailed ? XCircle : isWarning ? AlertTriangle : isSkipped ? MinusCircle : CheckCircle2
+  const statusColor = isFailed ? 'text-red-500' : isWarning ? 'text-amber-500' : isSkipped ? 'text-slate-400 dark:text-slate-500' : 'text-emerald-500'
   
   // Animation delay
   const style = { animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }
@@ -36,6 +36,7 @@ const TelemetryStepView = ({ step, idx }) => {
               <span className={`text-[9px] font-mono px-1.5 py-[2px] rounded uppercase font-semibold tracking-wider ${
                 isFailed ? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400 border border-red-200 dark:border-red-900/50' :
                 isWarning ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50' :
+                isSkipped ? 'bg-slate-100 text-slate-600 dark:bg-slate-800/80 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50' :
                 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30'
               }`}>
                 {step.details.status}
@@ -493,17 +494,17 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.completion_tokens} tkns</span>
                  </div>
                  <div className="flex flex-col gap-1">
-                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><BookOpen size={12}/> Retrieved</span>
-                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                     {activeTelemetry.steps.find(s => s.name === 'Retrieval')?.details?.retrieved_chunks || 0} chunks
-                   </span>
-                 </div>
-                 <div className="flex flex-col gap-1">
-                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><FileText size={12}/> Citations</span>
-                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                     {activeTelemetry.steps.find(s => s.name === 'Retrieval')?.details?.citations_selected || 0} used
-                   </span>
-                 </div>
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><BookOpen size={12}/> Document Search</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {activeTelemetry.steps.find(s => s.name === 'Document Search')?.details?.retrieved_chunks || 0} chunks
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><FileText size={12}/> Sources Referenced</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      {activeTelemetry.steps.find(s => s.name === 'Document Search')?.details?.citations_selected || 0} used
+                    </span>
+                  </div>
               </div>
             </div>
 

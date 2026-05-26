@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Header
 import time
 from app.models.retriever import QueryRequest, QueryResponse, SourceDocument, QueryTelemetry, TelemetryStep
 from app.services.rag_chain import RAGChainService
-from app.services.guardrails import GuardrailsService
+from app.services.guardrails import GuardrailsService, GuardrailResult
 import logging
 
 logger = logging.getLogger(__name__)
