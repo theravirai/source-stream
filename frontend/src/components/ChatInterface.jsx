@@ -110,15 +110,32 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
     }
   }, [setRagSessionState])
 
-  const messagesEndRef = useRef(null)
+  const chatContainerRef = useRef(null)
+  const prevMessagesLength = useRef(messages.length)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (chatContainerRef.current) {
+      // Use requestAnimationFrame to ensure DOM has updated before scrolling
+      requestAnimationFrame(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+        }
+      })
+    }
   }
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, isLoading])
+    if (messages.length !== prevMessagesLength.current) {
+      scrollToBottom()
+      prevMessagesLength.current = messages.length
+    }
+  }, [messages.length])
+  
+  useEffect(() => {
+    if (isLoading) {
+      scrollToBottom()
+    }
+  }, [isLoading])
 
   const handleSend = async (textToSend) => {
     const userMessageText = textToSend || input.trim()
@@ -258,7 +275,10 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
           {/* Main Chat Area */}
           <div className="flex-grow flex flex-col justify-between border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg p-4 rounded min-h-[420px] max-h-[500px] transition-colors duration-200">
         {/* Messages List */}
-        <div className="flex-grow overflow-y-auto pr-1 flex flex-col gap-3.5 mb-4 max-h-[380px]">
+        <div 
+          ref={chatContainerRef}
+          className="flex-grow overflow-y-auto pr-1 flex flex-col gap-3.5 mb-4 max-h-[380px]"
+        >
           {messages.map((msg) => (
             <div 
               key={msg.id} 
@@ -362,9 +382,7 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
-
         {/* Input area & Quick Prompts */}
         <div className="flex flex-col gap-3">
           {/* Quick Prompts Suggestions (Visible when message logs have only welcome message) */}
