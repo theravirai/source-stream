@@ -64,14 +64,37 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
             name="Query Analysis",
             duration_ms=step_duration,
             details={
-                "status": "PASSED",
+                "status": "PASSED" if query_intent.requires_retrieval else "OUT-OF-SCOPE",
                 "requires_retrieval": query_intent.requires_retrieval,
                 "reason": query_intent.reason
             }
         ))
             
         # RAG Execution
-        result = RAGChainService.query(session_id=x_session_id, query=request.query, k=request.k, requires_retrieval=query_intent.requires_retrieval)
+        if not query_intent.requires_retrieval:
+            import re
+            q_clean = re.sub(r'[^\w\s]', '', request.query.lower().strip())
+            greetings = {"hi", "hello", "hey", "thanks", "thank you", "morning", "good morning", "good evening"}
+            is_greet = q_clean in greetings
+            
+            answer = (
+                "Hello! I am ready to help you search through your indexed documents." if is_greet 
+                else "This application is a RAG development workspace and only answers questions grounded in the indexed documents. Please ask a question about the uploaded knowledge base."
+            )
+            
+            result = {
+                "query": request.query,
+                "answer": answer,
+                "source_documents": [],
+                "retrieved_candidates": [],
+                "retrieval_ms": 0.0,
+                "synthesis_ms": 0.0,
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0
+            }
+        else:
+            result = RAGChainService.query(session_id=x_session_id, query=request.query, k=request.k, requires_retrieval=True)
         
         source_docs_raw = result.get("source_documents", [])
         candidates_raw = result.get("retrieved_candidates", [])
@@ -125,17 +148,27 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
             ))
         
         # 5. AI Response Generation
-        steps.append(TelemetryStep(
-            name="AI Response Generation",
-            duration_ms=result.get("synthesis_ms", 0.0),
-            details={
-                "status": "PASSED",
-                "prompt_tokens": result.get("prompt_tokens", 0),
-                "completion_tokens": result.get("completion_tokens", 0),
-                "total_tokens": result.get("total_tokens", 0),
-                "reason": "Generated conversational response." if not query_intent.requires_retrieval else "Generated context-grounded response."
-            }
-        ))
+        if query_intent.requires_retrieval:
+            steps.append(TelemetryStep(
+                name="AI Response Generation",
+                duration_ms=result.get("synthesis_ms", 0.0),
+                details={
+                    "status": "PASSED",
+                    "prompt_tokens": result.get("prompt_tokens", 0),
+                    "completion_tokens": result.get("completion_tokens", 0),
+                    "total_tokens": result.get("total_tokens", 0),
+                    "reason": "Generated context-grounded response."
+                }
+            ))
+        else:
+            steps.append(TelemetryStep(
+                name="AI Response Generation",
+                duration_ms=0.0,
+                details={
+                    "status": "SKIPPED",
+                    "reason": "Skipped because LLM is not used for out-of-scope requests."
+                }
+            ))
         
         # Convert raw retrieved Document objects to SourceDocument response model
         source_docs = [
@@ -160,7 +193,7 @@ async def query_rag(request: QueryRequest, x_session_id: str = Header(...)) -> Q
         step_start = time.perf_counter()
         
         if not query_intent.requires_retrieval:
-            output_eval = GuardrailResult(is_safe=True, reason="General conversational response. Grounding verification skipped.")
+            output_eval = GuardrailResult(is_safe=True, reason="Returned predefined out-of-scope message.")
         elif not source_docs_raw:
             output_eval = GuardrailResult(is_safe=True, reason="System fell back to unanswerable response because citations were not helpful.")
         else:

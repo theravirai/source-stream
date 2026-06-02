@@ -30,7 +30,7 @@ def test_index_endpoint_success(mock_index_documents):
     data = response.json()
     assert data["status"] == "success"
     assert data["indexed_count"] == 5
-    assert data["collection"] == "test_collection"
+    assert "test_session" in data["collection"]
     mock_index_documents.assert_called_once()
 
 @patch("app.services.vectorstore.VectorStoreService.similarity_search")
@@ -53,7 +53,7 @@ def test_search_endpoint_success(mock_similarity_search):
     assert data[0]["page_content"] == "chunk 0"
     assert data[0]["score"] == 0.95
     assert data[0]["metadata"]["source"] == "test.txt"
-    mock_similarity_search.assert_called_once_with(query="test query", k=2)
+    mock_similarity_search.assert_called_once_with(session_id="test_session", query="test query", k=2)
 
 @patch("app.services.vectorstore.VectorStoreService.get_status")
 def test_status_endpoint_success(mock_get_status):
@@ -63,7 +63,7 @@ def test_status_endpoint_success(mock_get_status):
         "chunks_count": 42,
         "vector_size": 1536
     }
-    response = client.get("/api/v1/vector-store/status")
+    response = client.get("/api/v1/vector-store/status", headers={"X-Session-ID": "test_session"})
     assert response.status_code == 200
     data = response.json()
     assert data["collection_name"] == "test_collection"
@@ -75,7 +75,7 @@ def test_status_endpoint_success(mock_get_status):
 @patch("app.services.vectorstore.VectorStoreService.clear_collection")
 def test_clear_endpoint_success(mock_clear_collection):
     mock_clear_collection.return_value = "test_collection"
-    response = client.post("/api/v1/vector-store/clear")
+    response = client.post("/api/v1/vector-store/clear", headers={"X-Session-ID": "test_session"})
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "success"

@@ -5,7 +5,7 @@ import { getSessionId } from '../utils/session'
 const TelemetryStepView = ({ step, idx, isLast }) => {
   const [expanded, setExpanded] = useState(false)
   const isFailed = step.details?.status === 'FAILED' || step.details?.status === 'BLOCKED'
-  const isWarning = (step.name === 'Document Search' && step.details?.citations_selected === 0) || step.details?.status === 'WARNING'
+  const isWarning = (step.name === 'Document Search' && step.details?.citations_selected === 0) || step.details?.status === 'WARNING' || step.details?.status === 'OUT-OF-SCOPE'
   const isSkipped = step.details?.status === 'SKIPPED'
   
   const StatusIcon = isFailed ? XCircle : isWarning ? AlertTriangle : isSkipped ? MinusCircle : CheckCircle2
