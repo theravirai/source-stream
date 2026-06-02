@@ -74,7 +74,7 @@ const TelemetryStepView = ({ step, idx, isLast }) => {
   )
 }
 
-function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavigate }) {
+function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, setRagSessionState, onNavigate }) {
   const [messages, setMessages] = useState(ragSessionState?.messages || [
     {
       id: 'welcome',
@@ -264,10 +264,12 @@ function ChatInterface({ isIndexed, ragSessionState, setRagSessionState, onNavig
             <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Please index document chunks into the Vector Store before initiating queries.</p>
           </div>
           <button 
-            onClick={() => onNavigate && onNavigate(2)}
+            onClick={() => onNavigate && onNavigate(earliestIncompleteStep !== undefined ? earliestIncompleteStep : 2)}
             className="mt-2 bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
           >
-            Go to Vector Store
+            {earliestIncompleteStep === 0 ? 'Go to Document Loader' 
+              : earliestIncompleteStep === 1 ? 'Go to Text Splitter' 
+              : 'Go to Vector Store'}
           </button>
         </div>
       ) : (

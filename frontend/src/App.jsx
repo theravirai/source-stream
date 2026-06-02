@@ -188,7 +188,11 @@ function App() {
           
           {/* Active View Container */}
           <div className="flex-grow">
-            {activeStep === 0 && (
+            {(() => {
+              const earliestIncompleteStep = !loadedDocuments ? 0 : !splitChunks ? 1 : !isIndexed ? 2 : 0;
+              return (
+                <>
+                  {activeStep === 0 && (
               <DocumentLoader 
                 onDocumentsLoaded={(docs) => {
                   setLoadedDocuments(docs)
@@ -218,6 +222,7 @@ function App() {
               <VectorStore 
                 chunks={splitChunks} 
                 isIndexed={isIndexed}
+                earliestIncompleteStep={earliestIncompleteStep}
                 vectorSearchState={vectorSearchState}
                 setVectorSearchState={setVectorSearchState}
                 onIndexingComplete={(complete) => {
@@ -239,11 +244,15 @@ function App() {
             {activeStep === 3 && (
               <ChatInterface 
                 isIndexed={isIndexed}
+                earliestIncompleteStep={earliestIncompleteStep}
                 ragSessionState={ragSessionState}
                 setRagSessionState={setRagSessionState}
                 onNavigate={(step) => setActiveStep(step)}
               />
             )}
+                </>
+              );
+            })()}
           </div>
         </div>
       </main>

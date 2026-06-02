@@ -23,6 +23,7 @@ dependencies = [
     "python-multipart>=0.0.32",
     "langchain-google-genai>=4.2.7",
     "langchain-qdrant>=1.1.0",
+    "playwright>=1.62.0",
 ]
 
 [dependency-groups]

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
 import { getSessionId } from '../utils/session'
 
-function VectorStore({ chunks, isIndexed, vectorSearchState, setVectorSearchState, onIndexingComplete, onNavigate }) {
+function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchState, setVectorSearchState, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [indexingComplete, setIndexingComplete] = useState(isIndexed || false)
@@ -123,10 +123,10 @@ function VectorStore({ chunks, isIndexed, vectorSearchState, setVectorSearchStat
             <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Please split your loaded documents into chunks to enable vector store indexing.</p>
           </div>
           <button 
-            onClick={() => onNavigate && onNavigate(1)}
+            onClick={() => onNavigate && onNavigate(earliestIncompleteStep !== undefined ? earliestIncompleteStep : 1)}
             className="mt-2 bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
           >
-            Go to Text Splitter
+            {earliestIncompleteStep === 0 ? 'Go to Document Loader' : 'Go to Text Splitter'}
           </button>
         </div>
       ) : (
