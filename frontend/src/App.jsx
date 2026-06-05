@@ -136,6 +136,10 @@ function App() {
     }
   }
 
+  const earliestIncompleteStep = (!loadedDocuments || loadedDocuments.length === 0) ? 0 
+    : (!splitChunks || splitChunks.length === 0) ? 1 
+    : !isIndexed ? 2 : 3;
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-ink-bg text-slate-900 dark:text-slate-50 font-sans flex flex-col antialiased transition-colors duration-200">
       {/* Top Header */}
@@ -181,18 +185,20 @@ function App() {
       <main className="max-w-7xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col gap-6">
         
         {/* Persistent Pipeline Rail */}
-        <PipelineRail activeStep={activeStep} setActiveStep={setActiveStep} steps={steps} />
+        <PipelineRail 
+          activeStep={activeStep} 
+          setActiveStep={setActiveStep} 
+          steps={steps} 
+          earliestIncompleteStep={earliestIncompleteStep} 
+        />
 
         {/* Active Stage Panel */}
         <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-surface p-4 md:p-6 flex-grow flex flex-col justify-between transition-colors duration-200 rounded-md">
           
           {/* Active View Container */}
           <div className="flex-grow">
-            {(() => {
-              const earliestIncompleteStep = (!loadedDocuments || loadedDocuments.length === 0) ? 0 : (!splitChunks || splitChunks.length === 0) ? 1 : !isIndexed ? 2 : 0;
-              return (
-                <>
-                  {activeStep === 0 && (
+            <>
+              {activeStep === 0 && (
               <DocumentLoader 
                 onDocumentsLoaded={(docs) => {
                   setLoadedDocuments(docs)
@@ -250,9 +256,7 @@ function App() {
                 onNavigate={(step) => setActiveStep(step)}
               />
             )}
-                </>
-              );
-            })()}
+            </>
           </div>
         </div>
       </main>
