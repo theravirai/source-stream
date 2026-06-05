@@ -206,7 +206,9 @@ function App() {
                   setIsIndexed(false)
                   setVectorSearchState(null)
                   setRagSessionState(null)
-                }} 
+                  setQdrantStats({ chunks_count: 0, status: 'not_created' })
+                }}
+                onNavigate={(step) => setActiveStep(step)}
               />
             )}
 
