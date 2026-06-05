@@ -1,6 +1,11 @@
 import React, { useState, useRef } from 'react'
 import { FileText, Link as LinkIcon, UploadCloud, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 
+const isValidWebsiteUrl = (u) => {
+  if (!u) return false
+  return /^https?:\/\/(localhost|([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(:\d+)?(\/.*)?$/.test(u)
+}
+
 function DocumentLoader({ onDocumentsLoaded }) {
   const [activeTab, setActiveTab] = useState('text') // 'text' | 'pdf' | 'website'
   const [file, setFile] = useState(null)
@@ -82,8 +87,8 @@ function DocumentLoader({ onDocumentsLoaded }) {
         })
       } else {
         if (!url) throw new Error('URL is required.')
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          throw new Error('URL must start with http:// or https://')
+        if (!isValidWebsiteUrl(url)) {
+          throw new Error('Please enter a valid URL (e.g. https://example.com)')
         }
         
         response = await fetch('/api/v1/document-loader/website', {
@@ -99,6 +104,11 @@ function DocumentLoader({ onDocumentsLoaded }) {
       }
 
       const docs = await response.json()
+      
+      if (!docs || docs.length === 0) {
+        throw new Error('No text content could be extracted from this source.')
+      }
+
       setResults(docs)
       setExpandedDocIndex(0)
       if (onDocumentsLoaded) {
@@ -222,8 +232,11 @@ function DocumentLoader({ onDocumentsLoaded }) {
                 placeholder="https://docs.example.com"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline text-slate-700 dark:text-slate-200 text-xs font-mono px-3 py-2 rounded focus:outline-none focus:border-accent w-full transition-colors duration-200"
+                className={`bg-white dark:bg-[#0a0c10] border text-slate-700 dark:text-slate-200 text-xs font-mono px-3 py-2 rounded focus:outline-none w-full transition-colors duration-200 ${url && !isValidWebsiteUrl(url) ? 'border-red-400 focus:border-red-500' : 'border-slate-200 dark:border-border-hairline focus:border-accent'}`}
               />
+              {url && !isValidWebsiteUrl(url) && (
+                <span className="text-[10px] text-red-500 font-mono">Please enter a valid URL (e.g. https://example.com)</span>
+              )}
             </div>
             
             <div className="flex flex-col gap-1.5">
@@ -254,7 +267,7 @@ function DocumentLoader({ onDocumentsLoaded }) {
 
         <button 
           className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-          disabled={loading || (activeTab === 'website' ? !url : !file)}
+          disabled={loading || (activeTab === 'website' ? !isValidWebsiteUrl(url) : !file)}
           onClick={handleLoad}
         >
           {loading ? (
@@ -273,7 +286,7 @@ function DocumentLoader({ onDocumentsLoaded }) {
           )}
         </button>
 
-        {results && (
+        {results && results.length > 0 && (
           <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg rounded p-4 flex flex-col gap-4 mt-2 transition-colors duration-200">
             <div className="flex flex-wrap justify-between items-center border-b border-slate-200 dark:border-border-hairline pb-3 gap-2">
               <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-mono font-semibold">

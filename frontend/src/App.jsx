@@ -189,7 +189,7 @@ function App() {
           {/* Active View Container */}
           <div className="flex-grow">
             {(() => {
-              const earliestIncompleteStep = !loadedDocuments ? 0 : !splitChunks ? 1 : !isIndexed ? 2 : 0;
+              const earliestIncompleteStep = (!loadedDocuments || loadedDocuments.length === 0) ? 0 : (!splitChunks || splitChunks.length === 0) ? 1 : !isIndexed ? 2 : 0;
               return (
                 <>
                   {activeStep === 0 && (
