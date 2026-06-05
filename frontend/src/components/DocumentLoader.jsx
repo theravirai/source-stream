@@ -207,7 +207,7 @@ function DocumentLoader({ onDocumentsLoaded }) {
             ) : (
               <div className="flex flex-col items-center text-center gap-1.5">
                 <UploadCloud size={36} className="text-slate-400 dark:text-slate-500" />
-                <p className="text-xs text-slate-600 dark:text-slate-300">Drag & drop your <span className="font-mono text-accent">.{activeTab}</span> file here, or click to browse</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300">Drag & drop your <span className="font-mono text-accent">.{activeTab === 'text' ? 'txt' : activeTab}</span> file here, or click to browse</p>
                 <span className="text-[10px] text-slate-500 font-mono">Maximum size: 20MB</span>
               </div>
             )}
