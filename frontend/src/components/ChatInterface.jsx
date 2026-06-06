@@ -276,10 +276,21 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
         <>
           {/* Main Chat Area */}
           <div className="flex-grow flex flex-col justify-between border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg p-4 rounded min-h-[420px] max-h-[500px] transition-colors duration-200">
+            {/* Final Stage Status Header */}
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-emerald-100 dark:border-emerald-900/30 pb-3 bg-emerald-50/50 dark:bg-emerald-950/10 p-3 -mx-4 -mt-4 rounded-t transition-colors duration-200">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-500">
+                <CheckCircle2 size={16} />
+                <span className="text-xs font-mono font-semibold tracking-wide uppercase">Pipeline complete</span>
+              </div>
+              <p className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                All systems ready. You can now query the indexed knowledge base.
+              </p>
+            </div>
+
         {/* Messages List */}
         <div 
           ref={chatContainerRef}
-          className="flex-grow overflow-y-auto pr-1 flex flex-col gap-3.5 mb-4 max-h-[380px]"
+          className="flex-grow overflow-y-auto pr-1 flex flex-col gap-3.5 mb-4 max-h-[380px] custom-scrollbar"
         >
           {messages.map((msg) => (
             <div 

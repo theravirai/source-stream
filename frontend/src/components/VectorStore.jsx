@@ -133,22 +133,32 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
         <div className="flex flex-col gap-5">
           {/* Indexing trigger panel */}
           {indexingComplete ? (
-            <div className="flex flex-col items-center justify-center text-center gap-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-200 dark:border-emerald-900/50 p-8 rounded transition-colors duration-200">
-              <div className="bg-emerald-100 dark:bg-emerald-900/40 p-3 rounded-full text-emerald-600 dark:text-emerald-500">
-                <CheckCircle2 size={28} />
+            <div className="flex flex-col gap-3.5 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
+              <div className="flex flex-wrap justify-between items-center gap-3">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300">Vector Store Ready</h4>
+                  <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+                    <strong className="text-slate-700 dark:text-slate-200">{chunks.length}</strong> text segments indexed into Qdrant.
+                  </p>
+                </div>
+                <button 
+                  className="bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-500 py-1.5 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase flex justify-center items-center gap-2 cursor-default border border-emerald-200 dark:border-emerald-900/50"
+                  disabled
+                >
+                  <CheckCircle2 size={14} />
+                  <span>Vector Store Indexed</span>
+                </button>
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 font-mono tracking-wide uppercase mb-1">Vector Store Ready</h4>
-                <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 font-mono">
-                  <strong className="text-emerald-700 dark:text-emerald-300">{chunks.length}</strong> chunks indexed into Qdrant.
+              <div className="flex flex-col gap-3 pt-3 border-t border-slate-200 dark:border-border-hairline">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
+                  Embeddings generated and indexed successfully. You can now use the RAG Query interface to test the pipeline.
                 </p>
-              </div>
-              <div className="mt-2 flex gap-3">
                 <button 
                   onClick={() => onNavigate && onNavigate(3)}
-                  className="bg-accent hover:bg-accent-hover text-white py-2 px-5 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors"
+                  className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors flex justify-center items-center gap-2"
                 >
-                  Continue to RAG Query
+                  <span>Continue to RAG Query</span>
+                  <span className="text-lg leading-none">&rarr;</span>
                 </button>
               </div>
             </div>
