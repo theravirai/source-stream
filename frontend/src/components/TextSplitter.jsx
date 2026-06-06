@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Layers, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Lock } from 'lucide-react'
+import { Scissors, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Lock } from 'lucide-react'
 
-function TextSplitter({ documents, onChunksGenerated, chunks, onNavigate }) {
+function TextSplitter({ documents, chunks, onChunksGenerated, onNavigate }) {
   const [chunkSize, setChunkSize] = useState(1000)
   const [chunkOverlap, setChunkOverlap] = useState(200)
   const [loading, setLoading] = useState(false)
@@ -125,20 +125,30 @@ function TextSplitter({ documents, onChunksGenerated, chunks, onNavigate }) {
             </div>
           )}
 
-          <button
-            className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
-            disabled={loading || isInvalidOverlap}
-            onClick={handleSplit}
-          >
-            {loading ? (
-              <>
-                <Loader size={14} className="animate-spin text-white" />
-                <span>Splitting documents...</span>
-              </>
-            ) : (
-              <span>Split documents</span>
-            )}
-          </button>
+          {chunks && chunks.length > 0 ? (
+            <button 
+              className="w-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-500 py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase flex justify-center items-center gap-2 cursor-default border border-emerald-200 dark:border-emerald-900/50"
+              disabled
+            >
+              <CheckCircle2 size={16} />
+              <span>Document Split</span>
+            </button>
+          ) : (
+            <button
+              className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
+              disabled={loading || isInvalidOverlap}
+              onClick={handleSplit}
+            >
+              {loading ? (
+                <>
+                  <Loader size={14} className="animate-spin text-white" />
+                  <span>Splitting documents...</span>
+                </>
+              ) : (
+                <span>Split documents</span>
+              )}
+            </button>
+          )}
 
           {chunks && chunks.length > 0 && (
             <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg rounded p-4 flex flex-col gap-4 mt-2 transition-colors duration-200">
@@ -156,8 +166,20 @@ function TextSplitter({ documents, onChunksGenerated, chunks, onNavigate }) {
                   </span>
                 </div>
               </div>
+              <div className="flex flex-col gap-3 pb-2 border-b border-slate-200 dark:border-border-hairline">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
+                  The text has been split successfully. The next step is to generate embeddings and index these chunks into the Vector Store.
+                </p>
+                <button 
+                  onClick={() => onNavigate && onNavigate(2)}
+                  className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors flex justify-center items-center gap-2"
+                >
+                  <span>Continue to Vector Store</span>
+                  <span className="text-lg leading-none">&rarr;</span>
+                </button>
+              </div>
 
-              <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+              <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {chunks.map((chunk, idx) => (
                   <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-[#0a0c10] rounded overflow-hidden shrink-0" key={idx}>
                     <button 
