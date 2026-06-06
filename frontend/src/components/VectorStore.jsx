@@ -8,6 +8,8 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
   const [indexingComplete, setIndexingComplete] = useState(isIndexed || false)
   const [indexedCount, setIndexedCount] = useState(null)
   const [collectionName, setCollectionName] = useState(null)
+  const [indexingTime, setIndexingTime] = useState(null)
+  const [progressStage, setProgressStage] = useState(0)
 
   // Search states
   const [searchQuery, setSearchQuery] = useState(vectorSearchState?.searchQuery || '')
@@ -30,6 +32,19 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
     }
   }, [setVectorSearchState])
 
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setProgressStage(0)
+      interval = setInterval(() => {
+        setProgressStage((prev) => (prev < 3 ? prev + 1 : 3))
+      }, 1500)
+    } else {
+      setProgressStage(0)
+    }
+    return () => clearInterval(interval)
+  }, [loading])
+
   const handleIndex = async () => {
     if (!chunks || chunks.length === 0) return
     setError(null)
@@ -37,6 +52,7 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
     setIndexingComplete(false)
 
     try {
+      const startTime = performance.now()
       const response = await fetch('/api/v1/vector-store/index', {
         method: 'POST',
         headers: { 
@@ -52,8 +68,11 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
       }
 
       const results = await response.json()
+      const endTime = performance.now()
+      
       setIndexedCount(results.indexed_count)
       setCollectionName(results.collection)
+      setIndexingTime(((endTime - startTime) / 1000).toFixed(1))
       setIndexingComplete(true)
       if (onIndexingComplete) {
         onIndexingComplete(true)
@@ -195,20 +214,40 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
                 </div>
               )}
 
-              <button
-                className="w-full bg-accent hover:bg-accent-hover text-white py-3 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2 mt-2"
-                disabled={loading}
-                onClick={handleIndex}
-              >
-                {loading ? (
-                  <>
-                    <Loader size={16} className="animate-spin text-white" />
-                    <span>Indexing vectors...</span>
-                  </>
-                ) : (
+              {loading ? (
+                <div className="bg-slate-50 dark:bg-ink-surface border border-slate-200 dark:border-border-hairline p-4 rounded mt-2 flex flex-col gap-4">
+                  <div className="flex items-center gap-3 text-accent font-mono text-xs font-bold uppercase tracking-wide">
+                    <Loader size={16} className="animate-spin" />
+                    <span>Processing Pipeline Active</span>
+                  </div>
+                  <div className="flex flex-col gap-2.5 pl-7 text-[11px] font-mono">
+                    <div className={`flex items-center gap-2.5 ${progressStage >= 0 ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-600'}`}>
+                      {progressStage > 0 ? <CheckCircle2 size={14} className="text-emerald-500" /> : progressStage === 0 ? <Loader size={14} className="animate-spin text-accent" /> : <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600" />}
+                      <span>Preparing chunks for embedding</span>
+                    </div>
+                    <div className={`flex items-center gap-2.5 ${progressStage >= 1 ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-600'}`}>
+                      {progressStage > 1 ? <CheckCircle2 size={14} className="text-emerald-500" /> : progressStage === 1 ? <Loader size={14} className="animate-spin text-accent" /> : <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600" />}
+                      <span>Generating high-dimensional embeddings (Gemini)</span>
+                    </div>
+                    <div className={`flex items-center gap-2.5 ${progressStage >= 2 ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-600'}`}>
+                      {progressStage > 2 ? <CheckCircle2 size={14} className="text-emerald-500" /> : progressStage === 2 ? <Loader size={14} className="animate-spin text-accent" /> : <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600" />}
+                      <span>Uploading vectors to Qdrant</span>
+                    </div>
+                    <div className={`flex items-center gap-2.5 ${progressStage >= 3 ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-600'}`}>
+                      {progressStage > 3 ? <CheckCircle2 size={14} className="text-emerald-500" /> : progressStage === 3 ? <Loader size={14} className="animate-spin text-accent" /> : <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600" />}
+                      <span>Finalizing collection</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  className="w-full bg-accent hover:bg-accent-hover text-white py-3 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2 mt-2"
+                  disabled={loading}
+                  onClick={handleIndex}
+                >
                   <span>Generate Embeddings & Index</span>
-                )}
-              </button>
+                </button>
+              )}
             </div>
           )}
 
