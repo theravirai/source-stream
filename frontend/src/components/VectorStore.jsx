@@ -163,28 +163,29 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-3.5 bg-slate-50 dark:bg-ink-bg border border-slate-200 dark:border-border-hairline p-4 rounded transition-colors duration-200">
-              <div className="flex flex-wrap justify-between items-center gap-3">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300">Ingestion segments ready</h4>
-                  <p className="text-[10px] text-slate-500 font-mono mt-0.5">
-                    <strong className="text-slate-700 dark:text-slate-200">{chunks.length}</strong> text segments prepared for Gemini embeddings.
-                  </p>
+            <div className="border border-slate-200 dark:border-border-hairline bg-white dark:bg-ink-bg rounded p-6 flex flex-col gap-5 transition-colors duration-200 shadow-sm">
+              <div className="flex flex-col gap-1 border-b border-slate-200 dark:border-border-hairline pb-4">
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide font-mono">Ready to Index</h4>
+                <p className="text-[11px] text-slate-500 font-mono">Review the vector store parameters before generating embeddings.</p>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 dark:bg-ink-surface p-4 rounded border border-slate-200 dark:border-border-hairline">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Chunks to index</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono">{chunks.length}</span>
                 </div>
-                <button
-                  className="bg-accent hover:bg-accent-hover text-white py-1.5 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2"
-                  disabled={loading}
-                  onClick={handleIndex}
-                >
-                  {loading ? (
-                    <>
-                      <Loader size={14} className="animate-spin text-white" />
-                      <span>Indexing vectors...</span>
-                    </>
-                  ) : (
-                    <span>Index chunks</span>
-                  )}
-                </button>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Embedding Model</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono">Gemini</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Vector Database</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono">Qdrant</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Collection</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono">source_stream</span>
+                </div>
               </div>
 
               {error && (
@@ -193,6 +194,21 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
                   <span>{error}</span>
                 </div>
               )}
+
+              <button
+                className="w-full bg-accent hover:bg-accent-hover text-white py-3 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors disabled:opacity-40 flex justify-center items-center gap-2 mt-2"
+                disabled={loading}
+                onClick={handleIndex}
+              >
+                {loading ? (
+                  <>
+                    <Loader size={16} className="animate-spin text-white" />
+                    <span>Indexing vectors...</span>
+                  </>
+                ) : (
+                  <span>Generate Embeddings & Index</span>
+                )}
+              </button>
             </div>
           )}
 
