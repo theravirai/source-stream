@@ -6,14 +6,24 @@ const isValidWebsiteUrl = (u) => {
   return /^https?:\/\/(localhost|([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(:\d+)?(\/.*)?$/.test(u)
 }
 
-function DocumentLoader({ onDocumentsLoaded, onNavigate }) {
+function DocumentLoader({ documents, onDocumentsLoaded, onNavigate }) {
   const [activeTab, setActiveTab] = useState('text') // 'text' | 'pdf' | 'website'
   const [file, setFile] = useState(null)
   const [url, setUrl] = useState('')
   const [maxDepth, setMaxDepth] = useState(2)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [results, setResults] = useState(null)
+  const [results, setResults] = useState(documents || null)
+
+  React.useEffect(() => {
+    if (!documents) {
+      setResults(null)
+      setFile(null)
+      setUrl('')
+    } else {
+      setResults(documents)
+    }
+  }, [documents])
   const [expandedDocIndex, setExpandedDocIndex] = useState(null)
   
   const fileInputRef = useRef(null)
@@ -317,13 +327,25 @@ function DocumentLoader({ onDocumentsLoaded, onNavigate }) {
               <p className="text-xs text-slate-500 dark:text-slate-400 font-mono leading-relaxed">
                 The document has been loaded successfully. Before semantic search can be performed, the document must be split into smaller chunks.
               </p>
-              <button 
-                onClick={() => onNavigate && onNavigate(1)}
-                className="w-full bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors flex justify-center items-center gap-2"
-              >
-                <span>Continue to Text Splitter</span>
-                <span className="text-lg leading-none">&rarr;</span>
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    setResults(null)
+                    setFile(null)
+                    if (onDocumentsLoaded) onDocumentsLoaded(null)
+                  }}
+                  className="w-1/3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2 px-4 rounded text-[10px] font-bold font-mono tracking-wide uppercase transition-colors flex justify-center items-center"
+                >
+                  Load Different
+                </button>
+                <button 
+                  onClick={() => onNavigate && onNavigate(1)}
+                  className="w-2/3 bg-accent hover:bg-accent-hover text-white py-2 px-4 rounded text-xs font-semibold font-mono tracking-wide uppercase transition-colors flex justify-center items-center gap-2"
+                >
+                  <span>Continue to Text Splitter</span>
+                  <span className="text-lg leading-none">&rarr;</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">

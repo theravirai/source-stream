@@ -200,6 +200,7 @@ function App() {
             <>
               {activeStep === 0 && (
               <DocumentLoader 
+                documents={loadedDocuments}
                 onDocumentsLoaded={(docs) => {
                   setLoadedDocuments(docs)
                   setSplitChunks(null)
