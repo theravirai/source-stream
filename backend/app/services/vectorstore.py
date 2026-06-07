@@ -82,6 +82,13 @@ class VectorStoreService:
         Add documents to Qdrant collection.
         """
         logger.info(f"Indexing {len(documents)} documents into Qdrant collection for session '{session_id}'.")
+        
+        # Clear existing collection for this session to avoid duplicate chunks on re-index
+        try:
+            cls.clear_collection(session_id)
+        except Exception as e:
+            logger.warning(f"Could not clear collection before indexing: {e}")
+            
         vector_store = cls.get_vector_store(session_id)
         vector_store.add_documents(documents)
         return len(documents)
