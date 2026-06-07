@@ -220,14 +220,12 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
   }
 
   const openCitationsDrawer = (sources, highlightIdx = null) => {
-    setIsTelemetryDrawerOpen(false)
     setActiveSources(sources)
     setHighlightedSourceIdx(highlightIdx)
     setIsDrawerOpen(true)
   }
 
   const openTelemetryDrawer = (msgId, telemetry) => {
-    setIsDrawerOpen(false)
     setActiveTelemetry(telemetry)
     setActiveTelemetryMsgId(msgId)
     setIsTelemetryDrawerOpen(true)
@@ -437,79 +435,9 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
         </div>
       </div>
 
-      {/* Citations Side Drawer (Absolute overlay inside relative container for neat visual framing) */}
-      {isDrawerOpen && (
-        <div className="absolute md:relative top-0 right-0 h-full w-full md:w-[320px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 transition-colors duration-200">
-          <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-4 py-3 bg-slate-50 dark:bg-[#0a0c10]">
-            <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-mono uppercase tracking-wider">
-              <BookOpen size={13} className="text-accent" />
-              <span>Citations ({activeSources.length})</span>
-            </h3>
-            <button className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1" onClick={() => setIsDrawerOpen(false)}>
-              <X size={16} />
-            </button>
-          </div>
-          
-          <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3">
-            {activeSources.map((source, idx) => {
-              const isHighlighted = idx === highlightedSourceIdx
-              return (
-                <div 
-                  key={idx} 
-                  className={`border p-3 rounded flex flex-col gap-1.5 bg-slate-50 dark:bg-[#0a0c10] transition-colors duration-200 ${
-                    isHighlighted ? 'border-accent' : 'border-slate-200 dark:border-border-hairline'
-                  }`}
-                >
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="flex items-center gap-1.5 text-[10px] font-mono font-semibold text-slate-800 dark:text-slate-200">
-                      <span className="text-accent font-bold">[{idx + 1}]</span>
-                      {source.metadata.source?.startsWith('http') ? (
-                        <a 
-                          href={source.metadata.source} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="text-slate-600 dark:text-slate-300 hover:text-accent dark:hover:text-accent flex items-center gap-1"
-                        >
-                          Link <ExternalLink size={10} />
-                        </a>
-                      ) : (
-                        <span className="flex items-center gap-1 truncate max-w-[120px]">
-                          <FileText size={10} className="text-slate-500 dark:text-slate-400 shrink-0" />
-                          {source.metadata.source ? source.metadata.source.split(/[/\\]/).pop() : 'doc'}
-                        </span>
-                      )}
-                    </span>
-                    {source.score !== undefined && (
-                      <span className="font-mono text-[9px] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-hairline px-1 rounded bg-white dark:bg-ink-hover">
-                        {(source.score * 100).toFixed(0)}% match
-                      </span>
-                    )}
-                  </div>
-
-                  {source.metadata.page !== undefined && source.metadata.page !== null && (
-                    <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
-                      <strong>Page:</strong> {parseInt(source.metadata.page) + 1}
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-1 border-t border-slate-200 dark:border-border-hairline/45 pt-1.5">
-                    <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                      <Info size={10} /> Context chunk
-                    </span>
-                    <div className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300 bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline/60 p-2 rounded max-h-[120px] overflow-y-auto select-all font-sans">
-                      {source.page_content}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Telemetry Side Drawer */}
-      {isTelemetryDrawerOpen && (
-        <div className="absolute md:relative top-0 right-0 h-full w-full md:w-[360px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 transition-colors duration-200 shadow-xl md:shadow-none">
+      {/* Unified Diagnostics Side Drawer (Split Pane) */}
+      {(isDrawerOpen || isTelemetryDrawerOpen) && (
+        <div className="absolute md:relative top-0 right-0 h-full max-h-[500px] w-full md:w-[360px] bg-white dark:bg-ink-surface border border-slate-200 dark:border-border-hairline md:border-l-0 rounded z-10 flex flex-col shrink-0 shadow-xl md:shadow-none transition-colors duration-200 overflow-hidden">
           <style>{`
             @keyframes fadeInUp {
               from { opacity: 0; transform: translateY(8px); }
@@ -517,68 +445,139 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
             }
             .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
           `}</style>
-          <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-5 py-4 bg-slate-50 dark:bg-[#0a0c10]">
-            <h3 className="text-[13px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 font-mono uppercase tracking-widest">
-              <Activity size={14} className="text-accent" />
-              <span>Execution Trace</span>
-            </h3>
-            <button className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" onClick={() => setIsTelemetryDrawerOpen(false)}>
-              <X size={16} />
-            </button>
-          </div>
-          
-          <div className="flex-grow overflow-y-auto p-5 flex flex-col gap-5 bg-white dark:bg-ink-surface">
-            {!activeTelemetry ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400 mt-20 gap-3">
-                <Activity size={24} className="animate-pulse text-accent" />
-                <span className="font-mono text-[10px] uppercase tracking-wider">Awaiting Telemetry...</span>
-              </div>
-            ) : (
-              <>
-                {/* Professional Summary Header */}
-            <div className="flex flex-col gap-3 bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-slate-800/80 p-4 rounded-md">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-slate-800/50">
-                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Clock size={12}/> Total Latency</span>
-                <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_duration_ms.toFixed(0)} ms</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="flex flex-col gap-1">
-                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Zap size={12}/> Prompt</span>
-                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.prompt_tokens} tkns</span>
-                 </div>
-                 <div className="flex flex-col gap-1">
-                   <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Zap size={12}/> Completion</span>
-                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.completion_tokens} tkns</span>
-                 </div>
-                 <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><BookOpen size={12}/> Document Search</span>
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {activeTelemetry.steps.find(s => s.name === 'Document Search')?.details?.retrieved_chunks || 0} chunks
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><FileText size={12}/> Sources Referenced</span>
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {activeTelemetry.steps.find(s => s.name === 'Document Search')?.details?.citations_selected || 0} used
-                    </span>
-                  </div>
-              </div>
-            </div>
 
-            {/* Pipeline Timeline */}
-            <div className="flex flex-col mt-2 pl-1">
-              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Pipeline Execution</span>
-              {activeTelemetry.steps.map((step, idx) => (
-                <TelemetryStepView key={idx} step={step} idx={idx} />
-              ))}
+          {/* Telemetry Section */}
+          {isTelemetryDrawerOpen && (
+            <div className={`flex flex-col flex-1 min-h-0 ${isDrawerOpen ? 'border-b-4 border-slate-100 dark:border-[#050608]' : ''}`}>
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-4 py-3 bg-slate-50 dark:bg-[#0a0c10] shrink-0">
+                <h3 className="text-[13px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 font-mono uppercase tracking-widest">
+                  <Activity size={14} className="text-accent" />
+                  <span>Execution Trace</span>
+                </h3>
+                <button className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" onClick={() => setIsTelemetryDrawerOpen(false)}>
+                  <X size={16} />
+                </button>
+              </div>
+              
+              <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-4 bg-white dark:bg-ink-surface custom-scrollbar">
+                {!activeTelemetry ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
+                    <Activity size={24} className="animate-pulse text-accent" />
+                    <span className="font-mono text-[10px] uppercase tracking-wider">Awaiting Telemetry...</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-3 bg-slate-50 dark:bg-[#0a0c10] border border-slate-200 dark:border-slate-800/80 p-3 rounded-md shrink-0">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-200/50 dark:border-slate-800/50">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Clock size={12}/> Total Latency</span>
+                        <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200">{activeTelemetry.total_duration_ms.toFixed(0)} ms</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Zap size={12}/> Prompt</span>
+                           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.prompt_tokens} tkns</span>
+                         </div>
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><Zap size={12}/> Completion</span>
+                           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{activeTelemetry.completion_tokens} tkns</span>
+                         </div>
+                         <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><BookOpen size={12}/> Document Search</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              {activeTelemetry.steps.find(s => s.name === 'Document Search')?.details?.retrieved_chunks || 0} chunks
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center gap-1.5"><FileText size={12}/> Sources</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              {activeTelemetry.steps.find(s => s.name === 'Document Search')?.details?.citations_selected || 0} used
+                            </span>
+                          </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col mt-1 pl-1 shrink-0">
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Pipeline Execution</span>
+                      {activeTelemetry.steps.map((step, idx) => (
+                        <TelemetryStepView key={idx} step={step} idx={idx} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-            
-              </>
-            )}
-          </div>
+          )}
+
+          {/* Citations Section */}
+          {isDrawerOpen && (
+            <div className={`flex flex-col flex-1 min-h-0`}>
+              <div className="flex justify-between items-center border-b border-slate-200 dark:border-border-hairline px-4 py-3 bg-slate-50 dark:bg-[#0a0c10] shrink-0">
+                <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 font-mono uppercase tracking-wider">
+                  <BookOpen size={13} className="text-accent" />
+                  <span>Citations ({activeSources.length})</span>
+                </h3>
+                <button className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors" onClick={() => setIsDrawerOpen(false)}>
+                  <X size={16} />
+                </button>
+              </div>
+              
+              <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar bg-white dark:bg-ink-surface">
+                {activeSources.map((source, idx) => {
+                  const isHighlighted = idx === highlightedSourceIdx
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`border p-3 rounded flex flex-col gap-1.5 bg-slate-50 dark:bg-[#0a0c10] transition-colors duration-200 shrink-0 ${
+                        isHighlighted ? 'border-accent' : 'border-slate-200 dark:border-border-hairline'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="flex items-center gap-1.5 text-[10px] font-mono font-semibold text-slate-800 dark:text-slate-200">
+                          <span className="text-accent font-bold">[{idx + 1}]</span>
+                          {source.metadata.source?.startsWith('http') ? (
+                            <a 
+                              href={source.metadata.source} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              className="text-slate-600 dark:text-slate-300 hover:text-accent dark:hover:text-accent flex items-center gap-1"
+                            >
+                              Link <ExternalLink size={10} />
+                            </a>
+                          ) : (
+                            <span className="flex items-center gap-1 truncate max-w-[120px]">
+                              <FileText size={10} className="text-slate-500 dark:text-slate-400 shrink-0" />
+                              {source.metadata.source ? source.metadata.source.split(/[/\\]/).pop() : 'doc'}
+                            </span>
+                          )}
+                        </span>
+                        {source.score !== undefined && (
+                          <span className="font-mono text-[9px] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-hairline px-1 rounded bg-white dark:bg-ink-hover">
+                            {(source.score * 100).toFixed(0)}% match
+                          </span>
+                        )}
+                      </div>
+
+                      {source.metadata.page !== undefined && source.metadata.page !== null && (
+                        <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                          <strong>Page:</strong> {parseInt(source.metadata.page) + 1}
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-1 border-t border-slate-200 dark:border-border-hairline/45 pt-1.5 mt-1">
+                        <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                          <Info size={10} /> Context chunk
+                        </span>
+                        <div className="text-[11px] leading-relaxed text-slate-700 dark:text-slate-300 bg-white dark:bg-[#0a0c10] border border-slate-200 dark:border-border-hairline/60 p-2 rounded max-h-[160px] overflow-y-auto select-all font-sans custom-scrollbar">
+                          {source.page_content}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
-
         </>
       )}
     </div>
