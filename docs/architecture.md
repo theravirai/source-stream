@@ -19,6 +19,7 @@ graph TD
         LLM[Groq LLM Service]
         RAG[RAG Chain Core]
         GUARD[Guardrails Service]
+        TEL[Telemetry Service]
     end
 
     subgraph Remote [Remote Services]
@@ -29,6 +30,7 @@ graph TD
 
     UI <-->|HTTP API| API
     API <--> GUARD
+    API <--> TEL
     API --> DL
     API --> TS
     API --> EMB
@@ -38,6 +40,7 @@ graph TD
     VEC --> Remote
     VEC <--> RAG
     RAG --> LLM
+    RAG --> TEL
     LLM --> Remote
 ```
 
@@ -84,4 +87,9 @@ graph TD
 - **Vector Store Service (`backend/app/services/vectorstore.py`)**: Connects to Qdrant Cloud, manages vector collection verification/recreation, indexes chunks, and performs similarity searches.
 - **LLM Service (`backend/app/services/llm.py`)**: Instantiates ChatGroq for answer synthesis.
 - **RAG Core (`backend/app/services/rag_chain.py`)**: Combines Qdrant VectorStoreRetriever and ChatGroq using LCEL pipeline composition to produce structured query response formats.
-- **Guardrails Service (`backend/app/services/guardrails.py`)**: Utilizes an LLM-as-a-judge pattern to perform input validation (prompt injection detection) and output validation (hallucination detection) on RAG queries.
+- **Guardrails Service (`backend/app/services/guardrails.py`)**: Utilizes an LLM-as-a-judge pattern to perform input validation and output validation (hallucination detection) on RAG queries.
+- **Telemetry Service (`backend/app/services/telemetry.py`)**: Injects and manages `TelemetryState` during the request lifecycle, capturing phase latency, token usage, and sub-step data. It returns this structural execution trace alongside the final response.
+
+## Cross-References
+- For deep dives into technology selection, see [design-decisions.md](design-decisions.md).
+- For an understanding of component scalability and system design, see [system-design.md](system-design.md).

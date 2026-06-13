@@ -14,6 +14,7 @@ The ingestion pipeline is built in step-by-step modular stages:
 3. **Embeddings & Indexing**: Generates Google Gemini embeddings (`models/gemini-embedding-001`) and indexes chunks in Qdrant Cloud, supporting similarity search.
 4. **RAG Core & Chat**: Retrieves relevant document chunks and synthesizes grounded answers using Groq API. Features dynamic relevance evaluation to intelligently distinguish between actual citations and unused retrieved candidates.
 5. **Guardrails**: An LLM-as-a-judge layer that intercepts queries to detect prompt injection/toxicity, and evaluates generated answers post-retrieval to prevent hallucinations.
+6. **Diagnostics & Telemetry**: Advanced developer workspace featuring a unified split-pane UI that displays a step-by-step pipeline Execution Trace (latency, tokens) alongside precise source Citations in real-time.
 
 ---
 
