@@ -45,5 +45,5 @@ During the LCEL chain execution (`{"context": retriever | format_docs, "question
 By placing the `{context}` block clearly separate from the `{question}` block, we reduce the risk of the LLM confusing the retrieved text with the user's instructions. This reduces the surface area for indirect prompt injections, where malicious text inside a retrieved PDF might otherwise command the LLM.
 
 ## Cross-References
-- To see how the system handles the fallback string, refer to [query-routing.md](query-routing.md).
-- To see the full LCEL chain execution, refer to [retrieval-pipeline.md](retrieval-pipeline.md).
+- To see how the system handles the fallback string, refer to [10-query-routing.md](10-query-routing.md).
+- To see the full LCEL chain execution, refer to [07-retrieval-pipeline.md](07-retrieval-pipeline.md).

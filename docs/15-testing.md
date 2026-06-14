@@ -30,4 +30,4 @@ If an architectural change (e.g., swapping Gemini embeddings for OpenAI embeddin
 The React frontend relies on component-level testing for complex logic (like parsing the telemetry payload) and end-to-end tests (via Playwright or Cypress) to ensure that the document ingestion workflow UI behaves correctly when simulating user clicks.
 
 ## Cross-References
-- To understand how to optimize the retrieval based on eval results, see [performance.md](performance.md).
+- To understand how to optimize the retrieval based on eval results, see [14-performance.md](14-performance.md).

@@ -38,5 +38,5 @@ The Telemetry system operates as an interceptor. Instead of polluting the core R
 - **LLM Rate Limits:** RAG systems are often bottlenecked by LLM rate limits. The current design mitigates this by using Groq for ultra-fast generation and Gemini for embeddings, distributing API load across providers.
 
 ## Cross-References
-- To see the visual layout of these components, view [architecture.md](architecture.md).
-- To understand why specific technologies were chosen, view [design-decisions.md](design-decisions.md).
+- To see the visual layout of these components, view [03-architecture.md](03-architecture.md).
+- To understand why specific technologies were chosen, view [05-design-decisions.md](05-design-decisions.md).

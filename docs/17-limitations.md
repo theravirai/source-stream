@@ -23,4 +23,4 @@ This document provides an honest engineering assessment of the current constrain
 **Tradeoff:** We currently rely on the pre-retrieval Guardrails to block completely out-of-scope queries, but a dedicated semantic router (e.g., using a classification layer to bypass retrieval entirely for greetings) would be more efficient.
 
 ## Cross-References
-- To see how these constraints are scheduled to be addressed, review the [roadmap.md](roadmap.md).
+- To see how these constraints are scheduled to be addressed, review the [18-roadmap.md](18-roadmap.md).

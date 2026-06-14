@@ -35,5 +35,5 @@ graph LR
 The system retrieves the top `K` results (default `K=4`), returning both the underlying text and a `score` (e.g., `0.76` representing a 76% cosine similarity match). These scores are dynamically injected into the chunk metadata so they can be surfaced in the frontend UI's Citations panel.
 
 ## Cross-References
-- To see how these retrieved chunks are utilized, refer to [retrieval-pipeline.md](retrieval-pipeline.md).
-- To understand why Qdrant and Gemini were selected, refer to [design-decisions.md](design-decisions.md).
+- To see how these retrieved chunks are utilized, refer to [07-retrieval-pipeline.md](07-retrieval-pipeline.md).
+- To understand why Qdrant and Gemini were selected, refer to [05-design-decisions.md](05-design-decisions.md).

@@ -31,4 +31,4 @@ After the RAG chain generates an answer based on the retrieved context, the outp
 Running LLM-as-a-judge adds latency to the overall request (one call before retrieval, one call after generation). This is why Groq is utilized; its ultra-low latency inference ensures that these two additional LLM calls add less than 500ms of overhead, maintaining a snappy user experience while enforcing strict safety.
 
 ## Cross-References
-- To see how the guardrails fit into the overall data flow, refer to [retrieval-pipeline.md](retrieval-pipeline.md).
+- To see how the guardrails fit into the overall data flow, refer to [07-retrieval-pipeline.md](07-retrieval-pipeline.md).

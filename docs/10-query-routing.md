@@ -30,5 +30,5 @@ When the backend parses this deterministic response, it executes a routing branc
 By moving irrelevant chunks to `retrieved_candidates`, the frontend UI knows *not* to render them as trusted citations. However, because they are still returned in the JSON payload, developers can inspect the `retrieved_candidates` in the diagnostics drawer to debug *why* the vector search fetched them in the first place.
 
 ## Cross-References
-- To see the prompt instructions that force this routing, refer to [prompt-construction.md](prompt-construction.md).
-- To view how this flows end-to-end, refer to [retrieval-pipeline.md](retrieval-pipeline.md).
+- To see the prompt instructions that force this routing, refer to [09-prompt-construction.md](09-prompt-construction.md).
+- To view how this flows end-to-end, refer to [07-retrieval-pipeline.md](07-retrieval-pipeline.md).

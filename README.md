@@ -67,7 +67,7 @@ The ingestion pipeline is built in step-by-step modular stages:
 
 ## 🔌 API Endpoints
 
-For a detailed spec of endpoints, parameters, and models, refer to [api.md](file:///Volumes/BrainStorm/Github/GenAI/source-stream/docs/api.md).
+For a detailed spec of endpoints, parameters, and models, refer to [06-api.md](file:///Volumes/BrainStorm/Github/GenAI/source-stream/docs/06-api.md).
 
 ### Document Loader
 - `POST /api/v1/document-loader/text` - Load a `.txt` file and get raw text.

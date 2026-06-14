@@ -50,4 +50,4 @@ This document outlines the core technology choices for `source-stream` and expla
 - **Reproducibility:** Excellent lockfile (`pyproject.toml` -> `requirements.txt`) generation ensures deterministic builds in the Docker container.
 
 ## Cross-References
-- For how these components fit together, see [architecture.md](architecture.md) and [system-design.md](system-design.md).
+- For how these components fit together, see [03-architecture.md](03-architecture.md) and [04-system-design.md](04-system-design.md).

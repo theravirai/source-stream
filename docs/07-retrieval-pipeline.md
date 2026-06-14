@@ -43,5 +43,5 @@ The returned chunks are serialized and injected into a strict prompt template al
 Before the response is returned to the user, a secondary Guardrail check evaluates the generated answer against the retrieved context. If the LLM fabricated information not found in the chunks, the output is suppressed and replaced with a fallback statement.
 
 ## Cross-References
-- To see how the system handles queries where context doesn't have the answer, see [query-routing.md](query-routing.md).
-- To understand how the context is actually injected, see [prompt-construction.md](prompt-construction.md).
+- To see how the system handles queries where context doesn't have the answer, see [10-query-routing.md](10-query-routing.md).
+- To understand how the context is actually injected, see [09-prompt-construction.md](09-prompt-construction.md).

@@ -25,4 +25,4 @@ Before submitting a Pull Request, ensure:
 4. **Documentation:** Update the relevant engineering markdown files in `docs/` if architectural boundaries have shifted.
 
 ## Cross-References
-- To review the architectural rules in depth, see [system-design.md](system-design.md) and [architecture.md](architecture.md).
+- To review the architectural rules in depth, see [04-system-design.md](04-system-design.md) and [03-architecture.md](03-architecture.md).

@@ -63,5 +63,5 @@ The React frontend utilizes a dual-pane diagnostics drawer (DevTool UI) that pro
 This dual-pane design uses CSS flexbox (`flex-1 min-h-0`) to maintain a strict layout, preventing page expansion while providing internal scrolling for large traces.
 
 ## Cross-References
-- For details on the API response schema that carries the telemetry, see [api.md](api.md).
-- To see how the retrieved chunks are scored, see [vector-store.md](vector-store.md).
+- For details on the API response schema that carries the telemetry, see [06-api.md](06-api.md).
+- To see how the retrieved chunks are scored, see [08-vector-store.md](08-vector-store.md).

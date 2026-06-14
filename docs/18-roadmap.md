@@ -29,4 +29,4 @@ This document outlines the planned architectural improvements for `source-stream
   - *Implementation:* Store the `TelemetryState` payload into a logging database (like PostgreSQL or BigQuery) keyed by `trace_id` for historical analysis and dashboarding.
 
 ## Cross-References
-- To understand why these improvements are necessary, review the [limitations.md](limitations.md).
+- To understand why these improvements are necessary, review the [17-limitations.md](17-limitations.md).

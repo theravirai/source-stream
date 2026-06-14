@@ -91,5 +91,5 @@ graph TD
 - **Telemetry Service (`backend/app/services/telemetry.py`)**: Injects and manages `TelemetryState` during the request lifecycle, capturing phase latency, token usage, and sub-step data. It returns this structural execution trace alongside the final response.
 
 ## Cross-References
-- For deep dives into technology selection, see [design-decisions.md](design-decisions.md).
-- For an understanding of component scalability and system design, see [system-design.md](system-design.md).
+- For deep dives into technology selection, see [05-design-decisions.md](05-design-decisions.md).
+- For an understanding of component scalability and system design, see [04-system-design.md](04-system-design.md).
