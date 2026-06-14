@@ -279,7 +279,29 @@ Retrieves relevant document chunks and synthesizes a response using the configur
         "score": 0.8954
       }
     ],
-    "retrieved_candidates": []
+    "retrieved_candidates": [],
+    "telemetry": {
+      "total_duration_ms": 1240.5,
+      "prompt_tokens": 850,
+      "completion_tokens": 120,
+      "steps": [
+        {
+          "name": "Input validation",
+          "duration_ms": 150.2,
+          "status": "SAFE",
+          "details": null
+        },
+        {
+          "name": "Document Search",
+          "duration_ms": 400.1,
+          "status": "PASSED",
+          "details": {
+            "retrieved_chunks": 4,
+            "citations_selected": 4
+          }
+        }
+      ]
+    }
   }
   ```
 
