@@ -9,8 +9,25 @@ from app.services.embeddings import get_embeddings_service
 logger = logging.getLogger(__name__)
 
 class VectorStoreService:
-    @staticmethod
-    def get_vector_store(session_id: str) -> QdrantVectorStore:
+    _cached_vector_size = None
+
+    @classmethod
+    def _get_vector_size(cls, embeddings) -> int:
+        if cls._cached_vector_size is not None:
+            return cls._cached_vector_size
+            
+        try:
+            sample_vector = embeddings.embed_query("test")
+            cls._cached_vector_size = len(sample_vector)
+            logger.info(f"Dynamically determined embedding vector size: {cls._cached_vector_size}")
+        except Exception as e:
+            logger.warning(f"Failed to dynamically determine embedding size: {e}. Falling back to 3072.")
+            cls._cached_vector_size = 3072
+            
+        return cls._cached_vector_size
+
+    @classmethod
+    def get_vector_store(cls, session_id: str) -> QdrantVectorStore:
         """
         Initialize Qdrant client, ensure collection exists, and return QdrantVectorStore.
         """
@@ -28,14 +45,8 @@ class VectorStoreService:
         
         embeddings = get_embeddings_service()
 
-        # Determine embedding dimension size dynamically
-        try:
-            sample_vector = embeddings.embed_query("test")
-            vector_size = len(sample_vector)
-            logger.info(f"Dynamically determined embedding vector size: {vector_size}")
-        except Exception as e:
-            logger.warning(f"Failed to dynamically determine embedding size: {e}. Falling back to 3072.")
-            vector_size = 3072
+        # Determine embedding dimension size dynamically using cached result
+        vector_size = cls._get_vector_size(embeddings)
 
         # Ensure collection exists and matches the required vector dimension size
         recreate = False
@@ -162,11 +173,7 @@ class VectorStoreService:
         collection_name = f"source_stream_session_{session_id}"
         
         embeddings = get_embeddings_service()
-        try:
-            sample_vector = embeddings.embed_query("test")
-            vector_size = len(sample_vector)
-        except Exception:
-            vector_size = 3072 # Fallback
+        vector_size = cls._get_vector_size(embeddings)
             
         try:
             client.delete_collection(collection_name=collection_name)
