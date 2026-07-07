@@ -350,10 +350,10 @@ boxes_html.append(render_box(460, 450, "Query Intent Router", "Groq Llama 3.1 8B
 boxes_html.append(render_box(460, 580, "Query Embedding", "Gemini Embeddings", "", icon_gemini, ai_glow=True))
 boxes_html.append(render_box(460, 710, "Qdrant Similarity Search", "Top K Retrieval", "", icon_search))
 boxes_html.append(render_box(460, 840, "Prompt Construction", "LCEL", "Context Injection", icon_prompt))
-boxes_html.append(render_box(460, 970, "Answer Generation", "Groq Llama 3.1", "", icon_generation, ai_glow=True))
+boxes_html.append(render_box(460, 970, "Answer Generation", "Groq Llama 3.1 8B", "", icon_generation, ai_glow=True))
 
 # Col 3
-boxes_html.append(render_box(860, 970, "Groundedness Evaluation", "Groq Llama 3.1", "Compares answer vs retrieved context", icon_eval, ai_glow=True))
+boxes_html.append(render_box(860, 970, "Groundedness Evaluation", "Groq Llama 3.1 8B", "Compares answer vs retrieved context", icon_eval, ai_glow=True))
 boxes_html.append(render_box(860, 1100, "Grounded Response", "Answer", "Source Citations", icon_response, response_fade=True))
 
 

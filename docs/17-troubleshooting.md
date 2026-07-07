@@ -31,5 +31,5 @@ This document provides debugging steps for common system failures in `source-str
 **Resolution:** Ensure the `.env` file is populated. If running in Docker/Cloud Run, verify the environment variables are successfully mounted to the container at runtime.
 
 ## Cross-References
-- To understand how the UI telemetry helps identify these errors, see [12-telemetry.md](12-telemetry.md).
-- To verify correct deployment configurations, see [13-deployment.md](13-deployment.md).
+- To understand how the UI telemetry helps identify these errors, see [13-telemetry.md](13-telemetry.md).
+- To verify correct deployment configurations, see [14-deployment.md](14-deployment.md).

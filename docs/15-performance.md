@@ -31,5 +31,5 @@ If the system returns inaccurate answers, it is almost always a retrieval failur
 To actively optimize performance, utilize the DevTool UI. The `Execution Trace` panel breaks down exact millisecond latencies for each stage. If `Query Analysis` takes 800ms, the developer instantly knows the Groq API is experiencing degraded performance.
 
 ## Cross-References
-- To understand how to test performance changes, see [15-testing.md](15-testing.md).
-- To view how these metrics are tracked in code, see [12-telemetry.md](12-telemetry.md).
+- To understand how to test performance changes, see [16-testing.md](16-testing.md).
+- To view how these metrics are tracked in code, see [13-telemetry.md](13-telemetry.md).

@@ -59,4 +59,4 @@ Deployment should ideally be automated via GitHub Actions, triggering a Cloud Bu
 
 ## Cross-References
 - For local setup instructions, see [README.md](../README.md).
-- To troubleshoot deployment connection issues, see [16-troubleshooting.md](16-troubleshooting.md).
+- To troubleshoot deployment connection issues, see [17-troubleshooting.md](17-troubleshooting.md).
