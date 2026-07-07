@@ -100,15 +100,10 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
   const stateRef = useRef({ messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId })
   useEffect(() => {
     stateRef.current = { messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId }
-  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId])
-
-  useEffect(() => {
-    return () => {
-      if (setRagSessionState) {
-        setRagSessionState(stateRef.current)
-      }
+    if (setRagSessionState) {
+      setRagSessionState(stateRef.current)
     }
-  }, [setRagSessionState])
+  }, [messages, input, isDrawerOpen, activeSources, highlightedSourceIdx, isTelemetryDrawerOpen, activeTelemetry, activeTelemetryMsgId, setRagSessionState])
 
   const chatContainerRef = useRef(null)
   const prevMessagesLength = useRef(messages.length)

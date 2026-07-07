@@ -9,7 +9,20 @@ import { getSessionId } from './utils/session'
 
 function App() {
   const sessionId = getSessionId()
-  const [activeStep, setActiveStep] = useState(0)
+  const storageKey = `source_stream_state_${sessionId}`
+
+  const getInitialState = (key, defaultVal) => {
+    try {
+      const s = sessionStorage.getItem(storageKey)
+      if (s) {
+        const parsed = JSON.parse(s)
+        return parsed[key] !== undefined ? parsed[key] : defaultVal
+      }
+    } catch(e) {}
+    return defaultVal
+  }
+
+  const [activeStep, setActiveStep] = useState(() => getInitialState('activeStep', 0))
   const [status, setStatus] = useState('checking')
   const [serverInfo, setServerInfo] = useState(null)
   
@@ -28,13 +41,26 @@ function App() {
   }, [theme])
 
   // Pipeline Data States
-  const [loadedDocuments, setLoadedDocuments] = useState(null)
-  const [splitChunks, setSplitChunks] = useState(null)
-  const [isIndexed, setIsIndexed] = useState(false)
-  const [vectorSearchState, setVectorSearchState] = useState(null)
-  const [ragSessionState, setRagSessionState] = useState(null)
+  const [loadedDocuments, setLoadedDocuments] = useState(() => getInitialState('loadedDocuments', null))
+  const [splitChunks, setSplitChunks] = useState(() => getInitialState('splitChunks', null))
+  const [isIndexed, setIsIndexed] = useState(() => getInitialState('isIndexed', false))
+  const [vectorSearchState, setVectorSearchState] = useState(() => getInitialState('vectorSearchState', null))
+  const [ragSessionState, setRagSessionState] = useState(() => getInitialState('ragSessionState', null))
   const [qdrantStats, setQdrantStats] = useState({ chunks_count: 0, status: 'unknown' })
   const [isLoadingStatus, setIsLoadingStatus] = useState(true)
+
+  // Persist Pipeline State
+  useEffect(() => {
+    const stateToSave = {
+      activeStep,
+      loadedDocuments,
+      splitChunks,
+      isIndexed,
+      vectorSearchState,
+      ragSessionState
+    }
+    sessionStorage.setItem(storageKey, JSON.stringify(stateToSave))
+  }, [activeStep, loadedDocuments, splitChunks, isIndexed, vectorSearchState, ragSessionState, storageKey])
 
   // Fetch Backend health & Qdrant stats at boot
   useEffect(() => {
@@ -66,8 +92,19 @@ function App() {
           })
           if (data.chunks_count > 0) {
             setIsIndexed(true)
-            // Auto-switch to RAG Query if already indexed
-            setActiveStep(3)
+            // Auto-switch to RAG Query if already indexed and we aren't already there
+            setActiveStep(prev => prev < 3 ? 3 : prev)
+          } else {
+            // Backend was reset or collection missing, we must wipe stale local state
+            if (isIndexed || splitChunks || loadedDocuments) {
+              setLoadedDocuments(null)
+              setSplitChunks(null)
+              setIsIndexed(false)
+              setVectorSearchState(null)
+              setRagSessionState(null)
+              setActiveStep(0)
+              sessionStorage.removeItem(storageKey)
+            }
           }
         }
       } catch (err) {
