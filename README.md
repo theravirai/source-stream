@@ -1,8 +1,41 @@
 # Source Stream 🌊
 
-Source Stream is an enterprise-grade, high-performance RAG (Retrieval-Augmented Generation) application designed for indexing complex local PDFs, scraping live web documentation, and querying them through a modern chat interface with grounded citations.
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square)](https://langchain.com/)
+[![Gemini Embeddings](https://img.shields.io/badge/Gemini_Embeddings-8E75B2?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Groq](https://img.shields.io/badge/Groq-F55036?style=flat-square)](https://groq.com/)
+[![Qdrant](https://img.shields.io/badge/Qdrant-ff4d4f?style=flat-square)](https://qdrant.tech/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+
+Source Stream is an enterprise-grade RAG (Retrieval-Augmented Generation) application designed for indexing complex local PDFs, scraping live web documentation, and querying them through a modern chat interface with grounded citations.
 
 The ingestion pipeline is designed with a decoupled, modular architecture adhering to the single responsibility principle.
+
+---
+
+## Architecture
+
+<div align="center">
+  <img src="docs/images/rag-pipeline.svg" alt="RAG Pipeline Architecture" width="100%" />
+</div>
+
+---
+
+## Project Highlights
+
+- **Recursive website crawling**: Effortlessly scrape and index live documentation domains.
+- **Session isolated vector collections**: Multi-tenant data segregation per active session.
+- **Gemini embeddings**: 3072-dimensional vector representations for high-fidelity semantic search.
+- **Groq answer generation**: Ultra-fast LLM inference utilizing `llama-3.1-8b-instant`.
+- **Query intent routing**: Smart static routing to bypass retrieval for conversational pleasantries.
+- **Input guardrails**: Real-time prompt injection and toxicity detection before query execution.
+- **Groundedness evaluation**: Automated hallucination detection auditing generated responses.
+- **Execution Trace**: In-app unified developer diagnostics displaying step-by-step latency and token telemetry.
+- **Source citations**: Precise context tracing linking generated claims directly to source document chunks.
+- **Modular architecture**: Strictly decoupled frontend (React) and backend (FastAPI) utilizing RESTful endpoints.
 
 ---
 
@@ -18,16 +51,53 @@ The ingestion pipeline is built in step-by-step modular stages:
 
 ---
 
-## 💻 Tech Stack
+## 🔄 Architecture Overview
 
-- **Backend**: FastAPI, LangChain (including `langchain-text-splitters`, `langchain-google-genai`, and `langchain-qdrant`), Groq API, Gemini Embeddings, Qdrant Vector DB, BeautifulSoup4, `lxml`, `pypdf`, `uv`
-- **Frontend**: Vite, React (JS), Tailwind CSS v3, PostCSS, Lucide Icons
-- **Package Managers**: `uv` (Python), `npm` (Node)
+The following flowchart details the end-to-end request lifecycle during query execution.
+
+```mermaid
+flowchart LR
+    A[User Question] --> B(Input Guardrail)
+    B --> C(Query Router)
+    C --> D(Gemini Embedding)
+    D --> E[(Qdrant Search)]
+    E --> F(Prompt Construction)
+    F --> G(Groq Answer Generation)
+    G --> H(Groundedness Evaluation)
+    H --> I[Grounded Response]
+
+    style A fill:#1e293b,stroke:#475569,color:#f8fafc
+    style I fill:#059669,stroke:#047857,color:#ffffff
+    style E fill:#be123c,stroke:#9f1239,color:#ffffff
+```
 
 ---
 
+## Tech Stack
 
-## 🚀 Getting Started
+| Category | Technologies |
+|---|---|
+| **Backend Framework** | FastAPI |
+| **Frontend Framework** | Vite, React (JS), Tailwind CSS v3, PostCSS |
+| **AI Orchestration** | LangChain (`langchain-text-splitters`, `langchain-google-genai`, `langchain-qdrant`) |
+| **Large Language Model** | Groq API (`llama-3.1-8b-instant`) |
+| **Embeddings** | Google Gemini API (`models/gemini-embedding-001`) |
+| **Vector Database** | Qdrant Cloud |
+| **Document Parsing** | BeautifulSoup4, `lxml`, `pypdf` |
+| **Package Management** | `uv` (Python), `npm` (Node) |
+
+---
+
+## 📂 Repository Structure
+
+- `backend/`: FastAPI application. Contains API routes, Pydantic schemas, and the decoupled RAG services (document loaders, text splitters, vector stores, and LLM orchestration).
+- `frontend/`: React + Vite application. Contains the interactive, responsive user interface including the pipeline visualizer, chat interface, and telemetry split-pane.
+- `docs/`: Comprehensive technical documentation, architecture specifications, API references, and Mermaid diagrams.
+- `tests/`: Automated unit tests covering pipeline functionality, ensuring reliable retrieval and generation execution.
+
+---
+
+## Getting Started
 
 ### Prerequisites
 - Python >= 3.11
@@ -67,7 +137,7 @@ The ingestion pipeline is built in step-by-step modular stages:
 
 ## 🔌 API Endpoints
 
-For a detailed spec of endpoints, parameters, and models, refer to [06-api.md](file:///Volumes/BrainStorm/Github/GenAI/source-stream/docs/06-api.md).
+For a detailed spec of endpoints, parameters, and models, refer to `docs/06-api.md`.
 
 ### Document Loader
 - `POST /api/v1/document-loader/text` - Load a `.txt` file and get raw text.
@@ -86,6 +156,7 @@ For a detailed spec of endpoints, parameters, and models, refer to [06-api.md](f
 ### Retriever
 - `POST /api/v1/retriever/query` - Context-grounded RAG query answering using Qdrant search and Groq synthesis.
 
+---
 
 ## ☁️ Deployment
 
