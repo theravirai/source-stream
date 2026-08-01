@@ -1,12 +1,13 @@
 name: Frontend CI/CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-cicd.yml'
+  # push:
+  workflow_dispatch:
+    # branches:
+    #   - main
+    # paths:
+    #   - 'frontend/**'
+    #   - '.github/workflows/frontend-cicd.yml'
   pull_request:
     branches:
       - main
@@ -41,9 +42,14 @@ jobs:
   deploy:
     name: Deploy to Firebase Hosting
     needs: build
-    # Only deploy on pushes to main, not on pull requests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only deploy on manual workflow_dispatch
+    if: (github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+
+    # Required for Workload Identity Federation authentication
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     defaults:
       run:
@@ -59,11 +65,18 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
-      - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TOKEN }}'
-          channelId: live
-          projectId: your-firebase-project-id
-          entryPoint: ./frontend
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy on Firebase Hosting
+        run: |
+          firebase deploy \
+            --only hosting \
+            --project project-808fa43c-5d5b-483f-ae8

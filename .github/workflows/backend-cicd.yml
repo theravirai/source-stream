@@ -1,12 +1,13 @@
 name: Backend CI/CD
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-cicd.yml'
+  # push:
+  workflow_dispatch:  
+    # branches:
+    #   - main
+    # paths:
+    #   - 'backend/**'
+    #   - '.github/workflows/backend-cicd.yml'
   pull_request:
     branches:
       - main
@@ -49,8 +50,8 @@ jobs:
   deploy:
     name: Deploy to Cloud Run
     needs: test
-    # Only deploy on pushes to main, not on pull requests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only deploy on manual workflow_dispatch
+    if: (github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     
     # Required for Workload Identity Federation authentication
@@ -79,6 +80,7 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy source-stream-backend \
-            --source . \
-            --region europe-west1 \
-            --quiet
+          --source . \
+          --region europe-west1 \
+          --project project-808fa43c-5d5b-483f-ae8 \
+          --quiet

@@ -132,7 +132,7 @@ Security is a primary concern in the deployment pipeline. API keys are **never**
 1. **Google Cloud Run (Backend)**: Uses **Workload Identity Federation (WIF)**. Instead of storing a long-lived JSON service account key, GitHub securely requests a short-lived OIDC token from Google using the repository's identity. 
    - Required Secrets: `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_SERVICE_ACCOUNT`
 2. **Firebase (Frontend)**: Uses a standard Firebase Service Account token securely injected into the deployment action.
-   - Required Secrets: `FIREBASE_SERVICE_ACCOUNT_TOKEN`
+   - Required Secrets: `FIREBASE_SERVICE_ACCOUNT`
 
 > *Note: Runtime secrets (like `GEMINI_API_KEY` and `GROQ_API_KEY`) are stored natively in Google Cloud Secret Manager or Cloud Run environment variables and are NOT exposed to GitHub Actions.*
 
