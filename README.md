@@ -97,7 +97,7 @@ Source Stream features fully automated deployment pipelines orchestrated via **G
 - **Backend Pipeline**: Validates Python code using `pytest`. Automatically builds and deploys a new containerized FastAPI revision to Google Cloud Run using zero-trust Workload Identity Federation.
 - **Frontend Pipeline**: Validates the React application via `npm run build`. Automatically deploys the static Vite bundle to the global Firebase Hosting CDN.
 
-For a detailed breakdown of triggers, failure scenarios, and rollback procedures, refer to [15-ci-cd.md](docs/15-ci-cd.md).
+For a detailed breakdown of triggers, failure scenarios, and rollback procedures, refer to [20-ci-cd.md](docs/20-ci-cd.md).
 
 ---
 

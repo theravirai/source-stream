@@ -13,11 +13,11 @@ This document explains the production deployment architecture for `source-stream
 
 ```mermaid
 graph TD
-    Client[Web Browser] -->|HTTPS| Firebase[Firebase Hosting]
-    Firebase -.->|API Rewrite /api/*| CloudRun[Google Cloud Run (FastAPI)]
-    CloudRun -->|gRPC / HTTPS| Qdrant[Qdrant Cloud]
-    CloudRun -->|HTTPS| Groq[Groq API]
-    CloudRun -->|HTTPS| Gemini[Google Gemini API]
+    Client["Web Browser"] -->|HTTPS| Firebase["Firebase Hosting"]
+    Firebase -.->|"API Rewrite /api/*"| CloudRun["Google Cloud Run (FastAPI)"]
+    CloudRun -->|"gRPC / HTTPS"| Qdrant["Qdrant Cloud"]
+    CloudRun -->|HTTPS| Groq["Groq API"]
+    CloudRun -->|HTTPS| Gemini["Google Gemini API"]
 ```
 
 ## Backend (Google Cloud Run)
@@ -37,9 +37,11 @@ gcloud run deploy source-stream-backend \
   --set-env-vars="GEMINI_API_KEY=your_key,GROQ_API_KEY=your_key,QDRANT_URL=your_url,QDRANT_API_KEY=your_key"
 ```
 
-### Deploying Updates
+### Deploying Updates (Manual Fallback)
 
-To push a new version to an existing deployment, you don't need to re-enter environment variables—Cloud Run will automatically inherit them:
+> ⚠️ **Note:** Routine updates are now handled automatically by [GitHub Actions CI/CD](20-ci-cd.md). The following manual steps should only be used as an emergency fallback or for deploying from a local testing branch.
+
+To push a new version to an existing deployment manually, you don't need to re-enter environment variables—Cloud Run will automatically inherit them:
 
 1. **Deploy the backend** from source:
    ```bash
@@ -73,9 +75,11 @@ For a brand new Firebase project, ensure you have logged in and selected your pr
    firebase deploy --only hosting
    ```
 
-### Deploying Updates
+### Deploying Updates (Manual Fallback)
 
-When pushing UI updates to an existing project:
+> ⚠️ **Note:** Routine updates are now handled automatically by [GitHub Actions CI/CD](20-ci-cd.md). The following manual steps should only be used as an emergency fallback.
+
+When pushing UI updates to an existing project manually:
 
 1. Build the production application bundle:
    ```bash
@@ -102,8 +106,13 @@ Instead of hardcoding the Cloud Run URL in the frontend code, we utilize Firebas
 ```
 This ensures that all API calls to `/api/v1/...` bypass CORS restrictions, as the browser treats the backend as being on the same origin.
 
-## CI/CD Pipeline
-Deployment should ideally be automated via GitHub Actions, triggering a Cloud Build for the backend upon merges to the `main` branch, and a Firebase Deploy for the frontend.
+## ⚙️ Automated CI/CD Pipeline
+
+**Production deployments are now fully automated via GitHub Actions.** 
+
+You should **not** need to manually run `gcloud run deploy` or `firebase deploy` from your local terminal for routine updates. Pushing code to the `main` branch will automatically trigger the respective decoupled deployment pipelines.
+
+For a comprehensive breakdown of the GitHub Actions orchestration, trigger conditions, secrets management, and automated rollback strategies, please read the dedicated [20-ci-cd.md](20-ci-cd.md) architecture document.
 
 ## Cross-References
 - For local setup instructions, see [README.md](../README.md).
