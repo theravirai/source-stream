@@ -24,20 +24,68 @@ graph TD
 
 We use Cloud Run because it scales automatically to zero when there is no traffic and can scale horizontally to handle massive parallel ingestion or query loads.
 
-### Build and Deploy
-1. The backend uses a multi-stage `Dockerfile` optimized for `uv`.
-2. The image is built and pushed to Google Artifact Registry.
-3. The Cloud Run service is deployed with the required environment variables:
-   - `GEMINI_API_KEY`
-   - `GROQ_API_KEY`
-   - `QDRANT_URL`
-   - `QDRANT_API_KEY`
+### First Time Deployment
+
+When deploying the backend for the very first time, you must supply all required API keys to the container environment:
+
+```bash
+cd backend
+gcloud run deploy source-stream-backend \
+  --source . \
+  --region europe-west1 \
+  --allow-unauthenticated \
+  --set-env-vars="GEMINI_API_KEY=your_key,GROQ_API_KEY=your_key,QDRANT_URL=your_url,QDRANT_API_KEY=your_key"
+```
+
+### Deploying Updates
+
+To push a new version to an existing deployment, you don't need to re-enter environment variables—Cloud Run will automatically inherit them:
+
+1. **Deploy the backend** from source:
+   ```bash
+   cd backend
+   gcloud run deploy source-stream-backend --source . --region europe-west1
+   ```
 
 **Tradeoff Note:** Cloud Run instances are stateless. Any local files loaded via the Document Loader must be processed and embedded into Qdrant within the lifecycle of the request, as the container disk is ephemeral.
 
 ## Frontend (Firebase Hosting)
 
 Firebase Hosting provides a global CDN for the React SPA. 
+
+### First Time Deployment
+
+For a brand new Firebase project, ensure you have logged in and selected your project ID:
+
+1. Log into Firebase CLI and initialize (if not already done):
+   ```bash
+   npm install -g firebase-tools
+   firebase login
+   ```
+2. Set your active project in `frontend/.firebaserc` or run:
+   ```bash
+   firebase use --add your_firebase_project_id
+   ```
+3. Build and deploy:
+   ```bash
+   cd frontend
+   npm run build
+   firebase deploy --only hosting
+   ```
+
+### Deploying Updates
+
+When pushing UI updates to an existing project:
+
+1. Build the production application bundle:
+   ```bash
+   cd frontend
+   npm run build
+   ```
+2. Deploy the static assets and rules:
+   ```bash
+   firebase deploy --only hosting
+   ```
 
 ### API Rewrites
 Instead of hardcoding the Cloud Run URL in the frontend code, we utilize Firebase `rewrites` in `firebase.json`:
@@ -47,7 +95,7 @@ Instead of hardcoding the Cloud Run URL in the frontend code, we utilize Firebas
     "source": "/api/**",
     "run": {
       "serviceId": "source-stream-backend",
-      "region": "us-central1"
+      "region": "europe-west1"
     }
   }
 ]
