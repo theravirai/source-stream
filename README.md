@@ -9,6 +9,8 @@
 [![Groq](https://img.shields.io/badge/Groq-F55036?style=flat-square)](https://groq.com/)
 [![Qdrant](https://img.shields.io/badge/Qdrant-ff4d4f?style=flat-square)](https://qdrant.tech/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+[![Backend CI](https://img.shields.io/github/actions/workflow/status/ravirai/source-stream/backend-cicd.yml?label=Backend%20CI&style=flat-square&logo=githubactions&logoColor=white)](https://github.com/ravirai/source-stream/actions/workflows/backend-cicd.yml)
+[![Frontend CI](https://img.shields.io/github/actions/workflow/status/ravirai/source-stream/frontend-cicd.yml?label=Frontend%20CI&style=flat-square&logo=githubactions&logoColor=white)](https://github.com/ravirai/source-stream/actions/workflows/frontend-cicd.yml)
 
 Source Stream is an enterprise-grade RAG (Retrieval-Augmented Generation) application designed for indexing complex local PDFs, scraping live web documentation, and querying them through a modern chat interface with grounded citations.
 
@@ -85,6 +87,17 @@ flowchart LR
 | **Vector Database** | Qdrant Cloud |
 | **Document Parsing** | BeautifulSoup4, `lxml`, `pypdf` |
 | **Package Management** | `uv` (Python), `npm` (Node) |
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+Source Stream features fully automated deployment pipelines orchestrated via **GitHub Actions**. Due to the decoupled architecture, the frontend and backend are deployed completely independently.
+
+- **Backend Pipeline**: Validates Python code using `pytest`. Automatically builds and deploys a new containerized FastAPI revision to Google Cloud Run using zero-trust Workload Identity Federation.
+- **Frontend Pipeline**: Validates the React application via `npm run build`. Automatically deploys the static Vite bundle to the global Firebase Hosting CDN.
+
+For a detailed breakdown of triggers, failure scenarios, and rollback procedures, refer to [15-ci-cd.md](docs/15-ci-cd.md).
 
 ---
 
