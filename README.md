@@ -1,6 +1,6 @@
 # Source Stream 🌊
 
-[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -113,7 +113,7 @@ For a detailed breakdown of triggers, failure scenarios, and rollback procedures
 ## Getting Started
 
 ### Prerequisites
-- Python >= 3.11
+- Python >= 3.12
 - Node.js >= 18
 - `uv` (Fast Python package manager)
 

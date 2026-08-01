@@ -3,7 +3,7 @@ name = "source-stream-backend"
 version = "0.1.0"
 description = "Backend for source-stream RAG application"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.111.0",
     "uvicorn>=0.30.1",
