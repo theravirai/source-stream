@@ -1,5 +1,7 @@
 # Source Stream 🌊
 
+> **Live Application:** [source-stream.web.app](https://source-stream.web.app/)
+
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -97,7 +99,8 @@ Source Stream features fully automated deployment pipelines orchestrated via **G
 - **Backend Pipeline**: Validates Python code using `pytest`. Automatically builds and deploys a new containerized FastAPI revision to Google Cloud Run using zero-trust Workload Identity Federation.
 - **Frontend Pipeline**: Validates the React application via `npm run build`. Automatically deploys the static Vite bundle to the global Firebase Hosting CDN.
 
-For a detailed breakdown of triggers, failure scenarios, and rollback procedures, refer to [20-ci-cd.md](docs/20-ci-cd.md).
+For a high-level overview of triggers, failure scenarios, and rollback procedures, refer to [20-ci-cd.md](docs/20-ci-cd.md).
+For a detailed engineering guide on how the CI/CD pipeline was implemented and troubleshooting notes, refer to [21-github-actions-deployment-guide.md](docs/21-github-actions-deployment-guide.md).
 
 ---
 
