@@ -42,12 +42,14 @@ jobs:
           uv venv
           uv pip install -r requirements.txt
 
+      - name: Create .env file for tests
+        run: |
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" > .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          echo "QDRANT_URL=${{ secrets.QDRANT_URL }}" >> .env
+          echo "QDRANT_API_KEY=${{ secrets.QDRANT_API_KEY }}" >> .env
+
       - name: Run tests
-        env:
-          GROQ_API_KEY: "dummy_groq_key"
-          GEMINI_API_KEY: "dummy_gemini_key"
-          QDRANT_URL: "http://localhost:6333"
-          QDRANT_API_KEY: "dummy_qdrant_key"
         run: |
           # Use python module execution to preserve PYTHONPATH
           uv run pytest
