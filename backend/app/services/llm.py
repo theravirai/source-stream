@@ -12,8 +12,8 @@ def get_llm_service() -> ChatGroq:
         logger.error("GROQ_API_KEY is not set in settings")
         raise ValueError("GROQ_API_KEY is not configured in settings")
     
-    # We will look for GROQ_MODEL, defaulting to llama-3.1-8b-instant
-    model_name = getattr(settings, "GROQ_MODEL", "llama-3.1-8b-instant")
+    # We will look for GROQ_MODEL, defaulting to openai/gpt-oss-20b
+    model_name = getattr(settings, "GROQ_MODEL", "openai/gpt-oss-20b")
     logger.info(f"Initializing ChatGroq service with model='{model_name}'")
     
     return ChatGroq(

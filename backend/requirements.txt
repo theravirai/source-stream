@@ -74,6 +74,8 @@ googleapis-common-protos==1.75.0
     # via
     #   google-api-core
     #   grpcio-status
+greenlet==3.5.5
+    # via playwright
 groq==0.37.1
     # via langchain-groq
 grpcio==1.82.1
@@ -186,6 +188,8 @@ packaging==26.2
     # via
     #   langchain-core
     #   langsmith
+playwright==1.62.0
+    # via source-stream-backend (pyproject.toml)
 portalocker==3.2.0
     # via qdrant-client
 propcache==0.5.2
@@ -233,6 +237,8 @@ pydantic-settings==2.14.2
     # via
     #   source-stream-backend (pyproject.toml)
     #   langchain-community
+pyee==13.0.1
+    # via playwright
 pyparsing==3.3.2
     # via httplib2
 pypdf==6.14.2
@@ -296,6 +302,7 @@ typing-extensions==4.16.0
     #   langsmith
     #   pydantic
     #   pydantic-core
+    #   pyee
     #   sqlalchemy
     #   typing-inspection
 typing-inspection==0.4.2

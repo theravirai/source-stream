@@ -33,7 +33,7 @@ The ingestion pipeline is designed with a decoupled, modular architecture adheri
 - **Recursive website crawling**: Effortlessly scrape and index live documentation domains.
 - **Session isolated vector collections**: Multi-tenant data segregation per active session.
 - **Gemini embeddings**: 3072-dimensional vector representations for high-fidelity semantic search.
-- **Groq answer generation**: Ultra-fast LLM inference utilizing `llama-3.1-8b-instant`.
+- **Groq answer generation**: Fast LLM inference utilizing `openai/gpt-oss-20b`.
 - **Query intent routing**: Smart static routing to bypass retrieval for conversational pleasantries.
 - **Input guardrails**: Real-time prompt injection and toxicity detection before query execution.
 - **Groundedness evaluation**: Automated hallucination detection auditing generated responses.
