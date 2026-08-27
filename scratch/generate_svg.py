@@ -345,15 +345,15 @@ boxes_html.append(render_box(60, 710, "Qdrant Cloud", "Cosine Similarity", "HNSW
 
 # Col 2
 boxes_html.append(render_box(460, 190, "User Question", "Natural Language Input", "", icon_user))
-boxes_html.append(render_box(460, 320, "Input Guardrail", "Groq Llama 3.1 8B", "Prompt Injection, Toxicity Detection", icon_guardrail))
-boxes_html.append(render_box(460, 450, "Query Intent Router", "Groq Llama 3.1 8B", "Determines if retrieval is required", icon_router, ai_glow=True))
+boxes_html.append(render_box(460, 320, "Input Guardrail", "Groq GPT-OSS 20B", "Prompt Injection, Toxicity Detection", icon_guardrail))
+boxes_html.append(render_box(460, 450, "Query Intent Router", "Groq GPT-OSS 20B", "Determines if retrieval is required", icon_router, ai_glow=True))
 boxes_html.append(render_box(460, 580, "Query Embedding", "Gemini Embeddings", "", icon_gemini, ai_glow=True))
 boxes_html.append(render_box(460, 710, "Qdrant Similarity Search", "Top K Retrieval", "", icon_search))
 boxes_html.append(render_box(460, 840, "Prompt Construction", "LCEL", "Context Injection", icon_prompt))
-boxes_html.append(render_box(460, 970, "Answer Generation", "Groq Llama 3.1 8B", "", icon_generation, ai_glow=True))
+boxes_html.append(render_box(460, 970, "Answer Generation", "Groq GPT-OSS 20B", "", icon_generation, ai_glow=True))
 
 # Col 3
-boxes_html.append(render_box(860, 970, "Groundedness Evaluation", "Groq Llama 3.1 8B", "Compares answer vs retrieved context", icon_eval, ai_glow=True))
+boxes_html.append(render_box(860, 970, "Groundedness Evaluation", "Groq GPT-OSS 20B", "Compares answer vs retrieved context", icon_eval, ai_glow=True))
 boxes_html.append(render_box(860, 1100, "Grounded Response", "Answer", "Source Citations", icon_response, response_fade=True))
 
 

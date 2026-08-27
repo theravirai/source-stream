@@ -304,7 +304,7 @@
       </g>
     </g>
     <text class="box-text-title" x="70" y="35">Input Guardrail</text>
-    <text class="box-text-sub" x="70" y="58">Groq Llama 3.1 8B</text>
+    <text class="box-text-sub" x="70" y="58">Groq GPT-OSS 20B</text>
     <text class="box-text-sub" x="70" y="78">Prompt Injection, Toxicity Detection</text>
   </g>
 
@@ -332,7 +332,7 @@
       </g>
     </g>
     <text class="box-text-title" x="70" y="35">Query Intent Router</text>
-    <text class="box-text-sub" x="70" y="58">Groq Llama 3.1 8B</text>
+    <text class="box-text-sub" x="70" y="58">Groq GPT-OSS 20B</text>
     <text class="box-text-sub" x="70" y="78">Determines if retrieval is required</text>
   </g>
 
@@ -424,7 +424,7 @@
       </g>
     </g>
     <text class="box-text-title" x="70" y="40">Answer Generation</text>
-    <text class="box-text-sub" x="70" y="65">Groq Llama 3.1 8B</text>
+    <text class="box-text-sub" x="70" y="65">Groq GPT-OSS 20B</text>
   </g>
 
   <g transform="translate(860, 970)">
@@ -450,7 +450,7 @@
       </g>
     </g>
     <text class="box-text-title" x="70" y="35">Groundedness Evaluation</text>
-    <text class="box-text-sub" x="70" y="58">Groq Llama 3.1 8B</text>
+    <text class="box-text-sub" x="70" y="58">Groq GPT-OSS 20B</text>
     <text class="box-text-sub" x="70" y="78">Compares answer vs retrieved context</text>
   </g>
 

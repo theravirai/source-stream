@@ -69,7 +69,7 @@ sequenceDiagram
 - **Output**: JSON object containing a boolean decision and reason.
 - **Whether an external API is called**: Yes (Groq)
 - **Whether an LLM is involved**: Yes
-- **Which model is used**: Llama 3.1 8B
+- **Which model is used**: GPT-OSS 20B (`openai/gpt-oss-20b`)
 - **Which service is responsible**: `GuardrailService.evaluate_input`
 - **What happens next**: If blocked, execution halts immediately and an error is returned. If passed, execution proceeds to the Router.
 
@@ -80,7 +80,7 @@ sequenceDiagram
 - **Output**: Routing decision string (e.g., `requires_retrieval: true`).
 - **Whether an external API is called**: Yes (Groq)
 - **Whether an LLM is involved**: Yes
-- **Which model is used**: Llama 3.1 8B
+- **Which model is used**: GPT-OSS 20B (`openai/gpt-oss-20b`)
 - **Which service is responsible**: `RouterService.route_query`
 - **What happens next**: If retrieval is not required, a canned response is generated. Otherwise, execution proceeds to embedding.
 
@@ -122,7 +122,7 @@ sequenceDiagram
 - **Output**: Generated text string.
 - **Whether an external API is called**: Yes (Groq)
 - **Whether an LLM is involved**: Yes
-- **Which model is used**: Llama 3.1 8B
+- **Which model is used**: GPT-OSS 20B (`openai/gpt-oss-20b`)
 - **Which service is responsible**: `LLMService.generate_response`
 - **What happens next**: The generated answer is sent to the final guardrail.
 
@@ -133,7 +133,7 @@ sequenceDiagram
 - **Output**: JSON object (Grounded: true/false).
 - **Whether an external API is called**: Yes (Groq)
 - **Whether an LLM is involved**: Yes
-- **Which model is used**: Llama 3.1 8B
+- **Which model is used**: GPT-OSS 20B (`openai/gpt-oss-20b`)
 - **Which service is responsible**: `GuardrailService.evaluate_groundedness`
 - **What happens next**: If grounded, the response is delivered to the user. If ungrounded, a fallback message is returned.
 
@@ -192,7 +192,7 @@ sequenceDiagram
 
 | Service | Purpose | Model | Called How Many Times |
 |---|---|---|---|
-| Groq | Fast LLM Inference (Guardrails, Routing, Generation) | Llama 3.1 8B | 4 times per request |
+| Groq | Fast LLM Inference (Guardrails, Routing, Generation) | GPT-OSS 20B (`openai/gpt-oss-20b`) | 4 times per request |
 | Google Gemini | Query Embedding | gemini-embedding-001 | 1 time per request |
 | Qdrant Cloud | Vector Similarity Search | N/A | 1 time per request |
 

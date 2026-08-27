@@ -84,7 +84,7 @@ flowchart LR
 | **Backend Framework** | FastAPI |
 | **Frontend Framework** | Vite, React (JS), Tailwind CSS v3, PostCSS |
 | **AI Orchestration** | LangChain (`langchain-text-splitters`, `langchain-google-genai`, `langchain-qdrant`) |
-| **Large Language Model** | Groq API (`llama-3.1-8b-instant`) |
+| **Large Language Model** | Groq API (`openai/gpt-oss-20b`) |
 | **Embeddings** | Google Gemini API (`models/gemini-embedding-001`) |
 | **Vector Database** | Qdrant Cloud |
 | **Document Parsing** | BeautifulSoup4, `lxml`, `pypdf` |
