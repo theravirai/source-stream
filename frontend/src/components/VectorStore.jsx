@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
 import { getSessionId } from '../utils/session'
+import { getErrorMessage, parseJsonResponse } from '../utils/api'
 
 function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchState, setVectorSearchState, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
@@ -63,11 +64,11 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || `Server error: ${response.statusText}`)
+        const errorMsg = await getErrorMessage(response, 'Failed to index chunks in Qdrant.')
+        throw new Error(errorMsg)
       }
 
-      const results = await response.json()
+      const results = await parseJsonResponse(response)
       const endTime = performance.now()
       
       setIndexedCount(results.indexed_count)
@@ -109,11 +110,11 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || `Server error: ${response.statusText}`)
+        const errorMsg = await getErrorMessage(response, 'Failed to index chunks in Qdrant.')
+        throw new Error(errorMsg)
       }
 
-      const results = await response.json()
+      const results = await parseJsonResponse(response)
       setSearchResults(results)
     } catch (err) {
       setSearchError(err.message || 'Failed to query vector database.')

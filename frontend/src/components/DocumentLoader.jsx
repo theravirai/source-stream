@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { FileText, Link as LinkIcon, UploadCloud, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { getErrorMessage, parseJsonResponse } from '../utils/api'
 
 const isValidWebsiteUrl = (u) => {
   if (!u) return false
@@ -109,11 +110,11 @@ function DocumentLoader({ documents, onDocumentsLoaded, onNavigate }) {
       }
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || `Server error: ${response.statusText}`)
+        const errorMsg = await getErrorMessage(response, 'Failed to load document source.')
+        throw new Error(errorMsg)
       }
 
-      const docs = await response.json()
+      const docs = await parseJsonResponse(response)
       
       if (!docs || docs.length === 0) {
         throw new Error('No text content could be extracted from this source.')

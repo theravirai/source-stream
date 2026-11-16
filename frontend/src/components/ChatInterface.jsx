@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity, CheckCircle2, AlertCircle, XCircle, ChevronDown, ChevronRight, Clock, Zap, ShieldCheck, AlertTriangle, MinusCircle } from 'lucide-react'
 import { getSessionId } from '../utils/session'
+import { getErrorMessage, parseJsonResponse } from '../utils/api'
 
 const TelemetryStepView = ({ step, idx, isLast }) => {
   const [expanded, setExpanded] = useState(false)
@@ -174,11 +175,11 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to synthesize response')
+        const errorMsg = await getErrorMessage(response, 'Failed to synthesize response')
+        throw new Error(errorMsg)
       }
 
-      const data = await response.json()
+      const data = await parseJsonResponse(response)
       
       const assistantTimestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 

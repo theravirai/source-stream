@@ -6,6 +6,7 @@ import TextSplitter from './components/TextSplitter'
 import VectorStore from './components/VectorStore'
 import ChatInterface from './components/ChatInterface'
 import { getSessionId } from './utils/session'
+import { getErrorMessage, parseJsonResponse } from './utils/api'
 
 function App() {
   const sessionId = getSessionId()
@@ -68,7 +69,7 @@ function App() {
       try {
         const response = await fetch('/api/v1/health')
         if (response.ok) {
-          const data = await response.json()
+          const data = await parseJsonResponse(response)
           setServerInfo(data)
           setStatus('online')
         } else {
@@ -85,7 +86,7 @@ function App() {
           headers: { 'X-Session-Id': sessionId }
         })
         if (response.ok) {
-          const data = await response.json()
+          const data = await parseJsonResponse(response)
           setQdrantStats({
             chunks_count: data.chunks_count,
             status: data.status
@@ -166,10 +167,11 @@ function App() {
         setQdrantStats({ chunks_count: 0, status: 'not_created' })
         setActiveStep(0)
       } else {
-        alert('Failed to clear database collection.')
+        const errorMsg = await getErrorMessage(response, 'Failed to clear database collection.')
+        alert(errorMsg)
       }
     } catch (err) {
-      alert('Error connecting to backend to reset collection.')
+      alert(err.message || 'Error connecting to backend to reset collection.')
     }
   }
 
@@ -279,9 +281,9 @@ function App() {
                   fetch('/api/v1/vector-store/status', {
                     headers: { 'X-Session-Id': sessionId }
                   })
-                    .then(res => res.json())
+                    .then(res => parseJsonResponse(res))
                     .then(data => setQdrantStats({ chunks_count: data.chunks_count, status: data.status }))
-                    .catch(err => console.error(err))
+                    .catch(err => console.error('Failed to refresh stats:', err))
                 }}
                 onNavigate={(step) => setActiveStep(step)}
               />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Scissors, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Lock } from 'lucide-react'
+import { getErrorMessage, parseJsonResponse } from '../utils/api'
 
 function TextSplitter({ documents, chunks, onChunksGenerated, onNavigate }) {
   const [chunkSize, setChunkSize] = useState(1000)
@@ -25,11 +26,11 @@ function TextSplitter({ documents, chunks, onChunksGenerated, onNavigate }) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || `Server error: ${response.statusText}`)
+        const errorMsg = await getErrorMessage(response, 'Failed to split documents.')
+        throw new Error(errorMsg)
       }
 
-      const results = await response.json()
+      const results = await parseJsonResponse(response)
       onChunksGenerated(results)
     } catch (err) {
       setError(err.message || 'Failed to split documents.')
