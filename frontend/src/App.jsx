@@ -6,7 +6,7 @@ import TextSplitter from './components/TextSplitter'
 import VectorStore from './components/VectorStore'
 import ChatInterface from './components/ChatInterface'
 import { getSessionId } from './utils/session'
-import { getErrorMessage, parseJsonResponse } from './utils/api'
+import { getErrorMessage, parseJsonResponse, apiUrl } from './utils/api'
 
 function App() {
   const sessionId = getSessionId()
@@ -67,7 +67,7 @@ function App() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const response = await fetch('/api/v1/health')
+        const response = await fetch(apiUrl('/api/v1/health'))
         if (response.ok) {
           const data = await parseJsonResponse(response)
           setServerInfo(data)
@@ -82,7 +82,7 @@ function App() {
 
     const checkVectorStoreStatus = async () => {
       try {
-        const response = await fetch('/api/v1/vector-store/status', {
+        const response = await fetch(apiUrl('/api/v1/vector-store/status'), {
           headers: { 'X-Session-Id': sessionId }
         })
         if (response.ok) {
@@ -156,7 +156,7 @@ function App() {
     }
 
     try {
-      const response = await fetch('/api/v1/vector-store/clear', {
+      const response = await fetch(apiUrl('/api/v1/vector-store/clear'), {
         method: 'POST',
         headers: { 'X-Session-Id': sessionId }
       })
@@ -278,7 +278,7 @@ function App() {
                   setVectorSearchState(null)
                   setRagSessionState(null)
                   // Refresh Qdrant stats
-                  fetch('/api/v1/vector-store/status', {
+                  fetch(apiUrl('/api/v1/vector-store/status'), {
                     headers: { 'X-Session-Id': sessionId }
                   })
                     .then(res => parseJsonResponse(res))

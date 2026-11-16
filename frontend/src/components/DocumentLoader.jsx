@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { FileText, Link as LinkIcon, UploadCloud, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
-import { getErrorMessage, parseJsonResponse } from '../utils/api'
+import { getErrorMessage, parseJsonResponse, apiUrl } from '../utils/api'
 
 const isValidWebsiteUrl = (u) => {
   if (!u) return false
@@ -92,7 +92,7 @@ function DocumentLoader({ documents, onDocumentsLoaded, onNavigate }) {
         const formData = new FormData()
         formData.append('file', file)
         
-        response = await fetch(`/api/v1/document-loader/${activeTab}`, {
+        response = await fetch(apiUrl(`/api/v1/document-loader/${activeTab}`), {
           method: 'POST',
           body: formData,
         })
@@ -102,7 +102,7 @@ function DocumentLoader({ documents, onDocumentsLoaded, onNavigate }) {
           throw new Error('Please enter a valid URL (e.g. https://example.com)')
         }
         
-        response = await fetch('/api/v1/document-loader/website', {
+        response = await fetch(apiUrl('/api/v1/document-loader/website'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url, max_depth: maxDepth }),

@@ -15,7 +15,12 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION: str = "source_stream"
     
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://source-stream.web.app",
+        "https://source-stream.firebaseapp.com",
+    ]
     
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),

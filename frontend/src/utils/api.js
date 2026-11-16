@@ -1,4 +1,19 @@
 /**
+ * Base URL for API requests.
+ * In development, defaults to "" (relying on Vite's local proxy).
+ * In production (e.g. Firebase Hosting -> Render backend), configured via VITE_API_URL.
+ */
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
+/**
+ * Returns full URL for an API endpoint path.
+ */
+export const apiUrl = (path) => {
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${cleanPath}`;
+};
+
+/**
  * Safely extracts a meaningful error message from a fetch Response object.
  * Prevents JSON parsing crashes when servers or proxies return HTML error pages (e.g., 502/503/404).
  */

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, X, BookOpen, FileText, Sparkles, ExternalLink, Info, Lock, ShieldAlert, Activity, CheckCircle2, AlertCircle, XCircle, ChevronDown, ChevronRight, Clock, Zap, ShieldCheck, AlertTriangle, MinusCircle } from 'lucide-react'
 import { getSessionId } from '../utils/session'
-import { getErrorMessage, parseJsonResponse } from '../utils/api'
+import { getErrorMessage, parseJsonResponse, apiUrl } from '../utils/api'
 
 const TelemetryStepView = ({ step, idx, isLast }) => {
   const [expanded, setExpanded] = useState(false)
@@ -162,7 +162,7 @@ function ChatInterface({ isIndexed, earliestIncompleteStep, ragSessionState, set
     })
 
     try {
-      const response = await fetch('/api/v1/retriever/query', {
+      const response = await fetch(apiUrl('/api/v1/retriever/query'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

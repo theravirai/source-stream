@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Database, Search, Loader, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Lock } from 'lucide-react'
 import { getSessionId } from '../utils/session'
-import { getErrorMessage, parseJsonResponse } from '../utils/api'
+import { getErrorMessage, parseJsonResponse, apiUrl } from '../utils/api'
 
 function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchState, setVectorSearchState, onIndexingComplete, onNavigate }) {
   const [loading, setLoading] = useState(false)
@@ -54,7 +54,7 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
 
     try {
       const startTime = performance.now()
-      const response = await fetch('/api/v1/vector-store/index', {
+      const response = await fetch(apiUrl('/api/v1/vector-store/index'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ function VectorStore({ chunks, isIndexed, earliestIncompleteStep, vectorSearchSt
     if (searchK !== finalK) setSearchK(finalK)
 
     try {
-      const response = await fetch('/api/v1/vector-store/search', {
+      const response = await fetch(apiUrl('/api/v1/vector-store/search'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

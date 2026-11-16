@@ -9,13 +9,6 @@
     ],
     "rewrites": [
       {
-        "source": "/api/**",
-        "run": {
-          "serviceId": "source-stream-backend",
-          "region": "europe-west1"
-        }
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }

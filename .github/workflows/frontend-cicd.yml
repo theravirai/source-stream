@@ -37,6 +37,8 @@ jobs:
         run: npm ci
 
       - name: Build production bundle
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
 
   deploy:
@@ -63,6 +65,8 @@ jobs:
         run: npm ci
 
       - name: Build production bundle
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: npm run build
 
       - name: Google Auth

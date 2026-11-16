@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Scissors, AlertCircle, Loader, CheckCircle2, ChevronDown, ChevronUp, Lock } from 'lucide-react'
-import { getErrorMessage, parseJsonResponse } from '../utils/api'
+import { getErrorMessage, parseJsonResponse, apiUrl } from '../utils/api'
 
 function TextSplitter({ documents, chunks, onChunksGenerated, onNavigate }) {
   const [chunkSize, setChunkSize] = useState(1000)
@@ -15,7 +15,7 @@ function TextSplitter({ documents, chunks, onChunksGenerated, onNavigate }) {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/v1/text-splitter/split', {
+      const response = await fetch(apiUrl('/api/v1/text-splitter/split'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
